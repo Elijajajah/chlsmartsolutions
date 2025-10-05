@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@source "../views";
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@plugin "daisyui";
+
+@theme {
+    --font-inter: "Inter", sans-serif;
+    --font-montserrat: "Montserrat", sans-serif;
+    --font-poppins: "Poppins", sans-serif;
+}
+
+input:-webkit-autofill {
+    background-color: transparent !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+* {
+    letter-spacing: 0.75px;
+}
+
+.custom-scrollbar {
+    padding-right: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+calendar-month::part(selected) {
+    background-color: #5aa526 !important;
+    color: white !important;
+}
+
+calendar-month::part(heading) {
+    color: black !important;
+    font-weight: 700;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="date"].hide-calendar::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}
