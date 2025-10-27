@@ -10,6 +10,7 @@ use App\Models\Expense;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Database\Factories\ServiceFactory;
 
 class DatabaseSeeder extends Seeder
 {
@@ -47,6 +48,7 @@ class DatabaseSeeder extends Seeder
         }
 
         Product::factory()->count(20)->create();
+        ServiceFactory::createDefaultServices();
         Task::factory()->count(15)->create();
         Order::factory()->count(20)->create();
         Expense::factory()->count(30)->create();

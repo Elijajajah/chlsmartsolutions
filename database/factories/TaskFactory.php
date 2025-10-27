@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\ServiceCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,21 +17,8 @@ class TaskFactory extends Factory
      */
     public function definition(): array
     {
-        $servicesByTitle = [
-            'technical support' => ['phone support', 'computer maintenance'],
-            'maintenance' => ['computer maintenance', 'software updates'],
-            'installation' => ['signal installation', 'software installation'],
-            'troubleshooting assistance' => ['internet issues', 'slow performance'],
-            'device resets' => ['factory reset', 'password reset'],
-            'usage guidance' => ['device tutorial', 'software training'],
-        ];
-
-        $title = $this->faker->randomElement(array_keys($servicesByTitle));
-        $service = $this->faker->randomElement($servicesByTitle[$title]);
-
         return [
-            'title' => $title,
-            'service' => $service,
+            'service_id' => ServiceCategory::inRandomOrder()->value('id'),
             'priority' => $this->faker->randomElement(['low', 'medium', 'high']),
             'description' => $this->faker->paragraph(),
             'customer_name' => $this->faker->name(),
