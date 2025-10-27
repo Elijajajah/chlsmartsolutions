@@ -32,27 +32,27 @@ class CustomerBrowser extends Component
         $this->categories = $categoryService->getAllCategory();
     }
 
-    public function selectProduct($productId)
-    {
-        $this->selectedProduct = Product::with('category', 'inventory')->find($productId);
-        $this->showModal = true;
-    }
-
     public function closeModal()
     {
         $this->showModal = false;
         $this->selectedProduct = null;
     }
 
+    public function selectProduct($productId)
+    {
+        $this->selectedProduct = Product::with('category')->find($productId);
+        $this->showModal = true;
+    }
+
     public function addToCart()
     {
-        if ($this->selectedProduct->inventory->stock < 1) {
+        if ($this->selectedProduct->availableReservedCount() < 1) {
             notyf()->error('Product is not yet available');
             $this->closeModal();
             return;
         }
         $this->dispatch('addToCart', ['id' => $this->selectedProduct->id])
-                ->to(Cart::class);
+            ->to(Cart::class);
         $this->closeModal();
     }
 

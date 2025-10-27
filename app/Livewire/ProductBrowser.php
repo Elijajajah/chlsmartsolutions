@@ -18,13 +18,28 @@ class ProductBrowser extends Component
     public $search = '';
     public $searchCat = '';
     public $selectedCategory = 0;
-    public $quantity = 0;
     public $selectedStock = null;
     public $showModal = false;
     public string $activeTab = 'productBrowse';
     public $editingId = null;
     public $productId = null;
     public $name = '';
+    public $serial_numbers;
+
+    public function addSerial()
+    {
+        if (empty(trim(end($this->serial_numbers)))) {
+            notyf()->error('Please fill in serial number first.');
+            return;
+        }
+        $this->serial_numbers[] = '';
+    }
+
+    public function removeSerial($index)
+    {
+        unset($this->serial_numbers[$index]);
+        $this->serial_numbers = array_values($this->serial_numbers);
+    }
 
     public function mount(CategoryService $categoryService)
     {
@@ -35,19 +50,46 @@ class ProductBrowser extends Component
     {
         $this->showModal = true;
         $this->selectedStock = Product::with('inventory')->find($stock_id);
+        $this->serial_numbers = [''];
     }
 
     public function restockProduct($product_id)
     {
-        $quantity = $this->quantity;
         $product = $this->selectedStock;
-        if (($product->inventory->stock + $quantity) > $product->inventory->stock_max_limit) {
-            notyf()->error('Stock exceeds the maximum allowed limit.');
+
+        if (!$product) {
+            notyf()->error('Product not found.');
             return;
         }
-        $product->inventory->stock += $quantity;
-        $product->save();
-        notyf()->success('Stock updated successfully.');
+
+        if (in_array('', array_map('trim', $this->serial_numbers), true)) {
+            notyf()->error('Please fill in all serial numbers.');
+            return;
+        }
+
+        if (count($this->serial_numbers) !== count(array_unique($this->serial_numbers))) {
+            notyf()->error('Duplicate serial numbers detected.');
+            return;
+        }
+
+        $existingSerials = \App\Models\ProductSerial::whereIn('serial_number', $this->serial_numbers)->pluck('serial_number')->toArray();
+        if (!empty($existingSerials)) {
+            $duplicates = implode(', ', $existingSerials);
+            notyf()->error("These serial numbers already exist: {$duplicates}");
+            return;
+        }
+
+        $currentStock = $product->serials()->count();
+        $newStock = $currentStock + count($this->serial_numbers);
+
+        foreach ($this->serial_numbers as $serial) {
+            $product->serials()->create([
+                'serial_number' => trim($serial),
+                'status' => 'available',
+            ]);
+        }
+
+        notyf()->success('Product restocked successfully.');
         $this->closeModal();
     }
 
@@ -76,23 +118,17 @@ class ProductBrowser extends Component
 
     public function getStocks($status)
     {
-        $products = Product::with('inventory', 'orderProducts.order')->get();
+        $products = Product::with(['serials', 'category'])->get();
 
         return $products->filter(function ($product) use ($status) {
-            $inventory = $product->inventory;
-
-            $pendingQuantity = $product->orderProducts
-                ->where('order.status', 'pending')
-                ->sum('quantity');
-
-            $adjustedStock = $inventory->stock + $pendingQuantity;
+            $availableCount = $product->availableReservedCount();
 
             if ($status === 'out') {
-                return $adjustedStock === 0;
+                return $availableCount <= 0;
             }
 
             if ($status === 'low') {
-                return $adjustedStock <= $inventory->stock_min_limit && $adjustedStock > 0;
+                return $availableCount > 0 && $availableCount <= ($product->min_limit ?? 5);
             }
 
             return false;
@@ -103,7 +139,7 @@ class ProductBrowser extends Component
     {
         $category = Category::find($id);
         if ($this->editingId === $id) {
-            if ($this->name != $category->name){
+            if ($this->name != $category->name) {
                 $category->name = $this->name;
                 $category->save();
                 notyf()->success('Category is renamed successfully');

@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Inventory;
 use App\Models\OrderProduct;
 use Illuminate\Http\Request;
+use App\Models\ProductSerial;
 use App\Models\OrderInventory;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NotificationService;
@@ -42,19 +43,19 @@ class OrderController
 
         $cartItems = session()->get('cartItems', []);
 
-        if ($validator->fails()){
+        if ($validator->fails()) {
             $message = $validator->errors()->first();
             notyf()->error($message);
             return redirect()->back();
         }
 
-        if ($request->payment_method == 'e-wallet'){
+        if ($request->payment_method == 'e-wallet') {
             return; //for now
         }
 
-        foreach($cartItems as $item){
-            $product = Product::with('inventory')->where('id', $item->id)->first();
-            if ($product->inventory->stock < $item->quantity){
+        foreach ($cartItems as $item) {
+            $product = Product::where('id', $item->id)->first();
+            if ($product->availableReservedCount() < $item->quantity) {
                 $cartItems = array_filter($cartItems, function ($item) {
                     return $item->id !== $item->id;
                 });
@@ -66,7 +67,7 @@ class OrderController
 
         $expiry = now()->addDays(3)->toDateString();
         $status = 'pending';
-        if ($request->type != 'online'){
+        if ($request->type != 'online') {
             $expiry = now();
             $status = 'completed';
         }
@@ -80,18 +81,23 @@ class OrderController
             'expiry_date' => $expiry,
         ]);
 
-        foreach($cartItems as $item){
+        foreach ($cartItems as $item) {
             OrderProduct::create([
-            'order_id' => $order->id,
-            'product_id' => $item->id,
-            'quantity' => $item->quantity,
+                'order_id' => $order->id,
+                'product_id' => $item->id,
+                'quantity' => $item->quantity,
             ]);
         }
 
-        foreach($cartItems as $item){
-            $product = Inventory::where('product_id', $item->id)->first();
-            $product->stock -= $item->quantity;
-            $product->save();
+        foreach ($cartItems as $item) {
+            $availableSerials = ProductSerial::where('product_id', $item->id)
+                ->where('status', 'available')
+                ->inRandomOrder()
+                ->take($item->quantity)
+                ->get();
+
+            ProductSerial::whereIn('id', $availableSerials->pluck('id'))
+                ->update(['status' => 'reserved']);
         }
 
         session()->forget('cartItems');
@@ -99,11 +105,11 @@ class OrderController
         if ($order->status == 'completed') {
             $selectedOrder = Order::with('user')->find($order->id);
             app(NotificationService::class)->createNotif(
-                    $selectedOrder->user_id,
-                    "Order Completed",
-                    "{$selectedOrder->reference_id} placed by {$selectedOrder->user->fullname} has been successfully completed.",
-                    ['admin', 'cashier', 'admin_officer'],
-                );
+                $selectedOrder->user_id,
+                "Order Completed",
+                "{$selectedOrder->reference_id} placed by {$selectedOrder->user->fullname} has been successfully completed.",
+                ['admin', 'cashier', 'admin_officer'],
+            );
         }
 
         notyf()->success('Order placed successfully');

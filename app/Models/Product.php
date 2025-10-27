@@ -9,11 +9,13 @@ class Product extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'serial_number',
-        'name',
-        'price',
+        'supplier',
+        'original_price',
+        'retail_price',
         'description',
+        'name',
         'category_id',
+        'min_limit',
         'image_url',
     ];
 
@@ -22,13 +24,27 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function inventory()
-    {
-        return $this->hasOne(Inventory::class);
-    }
-
     public function orderProducts()
     {
         return $this->hasMany(OrderProduct::class);
+    }
+
+    public function serials()
+    {
+        return $this->hasMany(ProductSerial::class);
+    }
+
+    public function availableReservedCount()
+    {
+        return $this->serials()
+            ->whereIn('status', ['available', 'reserved'])
+            ->count();
+    }
+
+    public function availableCount()
+    {
+        return $this->serials()
+            ->where('status', 'available')
+            ->count();
     }
 }

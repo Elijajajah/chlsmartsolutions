@@ -36,46 +36,56 @@ class ProductService
             },
             'orderProducts.order'
         ])
-        ->whereHas('orderProducts.order', function ($query) use ($type, $date) {
-            $query->where('status', 'completed')
-                ->whereBetween('updated_at', [$date, now()]);
+            ->whereHas('orderProducts.order', function ($query) use ($type, $date) {
+                $query->where('status', 'completed')
+                    ->whereBetween('updated_at', [$date, now()]);
 
-            if ($type !== 'all') {
-                $query->where('type', $type);
-            }
-        })
-        ->when($category_id != 0, function ($query) use ($category_id) {
-            $query->where('category_id', $category_id);
-        })
-        ->when($search !== '', function ($query) use ($search) {
-            $query->where('name', 'like', '%' . $search . '%');
-        })
-        ->orderBy('created_at', 'asc')
-        ->paginate(8);
+                if ($type !== 'all') {
+                    $query->where('type', $type);
+                }
+            })
+            ->when($category_id != 0, function ($query) use ($category_id) {
+                $query->where('category_id', $category_id);
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->orderBy('created_at', 'asc')
+            ->paginate(8);
     }
 
     public function getTopSellingProduct()
     {
-        $products = Product::with('inventory', 'orderProducts.order', 'category')->get();
+        $products = Product::with(['serials', 'orderProducts.order', 'category'])->get();
 
-        return $products->filter(function ($product) {
-            $inventory = $product->inventory;
+        // Get highest sales count
+        $maxSold = $products->map(function ($product) {
+            return $product->orderProducts
+                ->where('order.status', 'completed')
+                ->sum('quantity');
+        })->max();
 
+        // Compute and rank
+        return $products->map(function ($product) use ($maxSold) {
             $soldQuantity = $product->orderProducts
                 ->where('order.status', 'completed')
                 ->sum('quantity');
 
-            return $soldQuantity >= ($inventory->stock_max_limit / 2);
-        })->sortByDesc(function ($product) {
-            return $product->orderProducts
-                ->where('order.status', 'completed')
-                ->sum('quantity');
-        })->values();
+            $product->sales_score = $maxSold > 0
+                ? round(($soldQuantity / $maxSold) * 100, 2)
+                : 0;
+
+            return $product;
+        })
+            ->filter(fn($p) => $p->sales_score > 0)
+            ->sortByDesc('sales_score')
+            ->values();
     }
+
 
     public function getProductWithStock($category_id = 0, $search = '')
     {
-        return Product::with(['inventory', 'orderProducts.order', 'category'])
+        return Product::with(['serials', 'orderProducts.order', 'category'])
             ->when($category_id != 0, function ($query) use ($category_id) {
                 $query->where('category_id', $category_id);
             })
@@ -85,20 +95,11 @@ class ProductService
             ->orderByDesc('created_at')
             ->paginate(10)
             ->through(function ($product) {
-                $inventory = $product->inventory;
+                $availableStock = $product->availableReservedCount();
 
-                $pendingQuantity = $product->orderProducts
-                    ->where('order.status', 'pending')
-                    ->sum('quantity');
-
-                $adjustedStock = $inventory ? ($inventory->stock + $pendingQuantity) : 0;
-
-                $product->adjusted_stock = $adjustedStock;
+                $product->adjusted_stock = $availableStock;
 
                 return $product;
             });
     }
-
-
-
 }

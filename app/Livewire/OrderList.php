@@ -35,9 +35,9 @@ class OrderList extends Component
     {
         foreach ($selectedProducts as $item) {
 
-            $product = Product::with('inventory')->findOrFail($item['id']);
+            $product = Product::findOrFail($item['id']);
 
-            if ($product->inventory->stock < 1) {
+            if ($product->availableCount() < 1) {
                 notyf()->error("{$product->name} is not available");
                 continue;
             }
@@ -63,8 +63,8 @@ class OrderList extends Component
             $this->products[] = (object)[
                 'id' => $product->id,
                 'name' => $product->name,
-                'price' => $product->price,
-                'stock' => $product->inventory->stock,
+                'price' => $product->retail_price,
+                'stock' => $product->availableCount(),
                 'quantity' => 1,
             ];
 
@@ -78,12 +78,11 @@ class OrderList extends Component
     public function removeProduct($id)
     {
         foreach ($this->products as $index => $item) {
-            if ($item->id == $id){
+            if ($item->id == $id) {
                 unset($this->products[$index]);
             }
         }
         session()->put('cartItems', $this->products);
-
     }
 
     public function getTotalAmountProperty()
@@ -104,5 +103,4 @@ class OrderList extends Component
     {
         return view('livewire.order-list');
     }
-
 }

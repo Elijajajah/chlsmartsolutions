@@ -44,14 +44,15 @@
                     <div class="relative w-full">
                         <div
                             class="absolute top-[-6px] md:top-0 right-[-4px] md:right-0 bg-transparent text-[#5AA526] font-semibold text-xs md:text-sm px-2 py-1">
-                            ₱{{ number_format($product->price, 2) }}
+                            ₱{{ number_format($product->retail_price, 2) }}
                         </div>
 
                         <img src="{{ asset('storage/' . $product->image_url) }}" alt="Product Image"
                             class="h-32 md:h-48 object-contain w-full" />
                     </div>
 
-                    <h3 class="line-clamp-1 font-medium text-gray-800 mb-2 text-xs md:text-sm">{{ $product->name }}</h3>
+                    <h3 class="line-clamp-1 font-medium text-gray-800 mb-2 text-xs md:text-sm">
+                        {{ ucwords($product->name) }}</h3>
 
                     <div class="text-[8px] md:text-xs bg-[#5AA526] text-white px-2 py-1 rounded-full">
                         {{ $product->category->name }}
@@ -76,12 +77,12 @@
 
                     <div class="md:w-[65%] flex flex-col">
                         <h2 class="text-[0.6rem] md:text-xs text-gray-500">{{ $selectedProduct->category->name }}</h2>
-                        <h1 class="text-sm md:text-xl font-bold">{{ $selectedProduct->name }}</h1>
+                        <h1 class="text-sm md:text-xl font-bold">{{ ucwords($selectedProduct->name) }}</h1>
                         <div class="flex items-center justify-between">
                             <p class="text-green-700 font-semibold text-sm md:text-lg">
-                                ₱{{ number_format($selectedProduct->price, 2) }}</p>
+                                ₱{{ number_format($selectedProduct->retail_price, 2) }}</p>
                             <p class="text-[0.6rem] md:text-xs text-gray-600">Current Stock:
-                                {{ $selectedProduct->inventory->stock }}</p>
+                                {{ $selectedProduct->availableReservedCount() }}</p>
                         </div>
                         <p
                             class="text-[0.6rem] md:text-xs text-gray-700 my-4 max-h-16 overflow-hidden overflow-y-auto custom-scrollbar">

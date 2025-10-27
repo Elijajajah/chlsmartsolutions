@@ -1,12 +1,6 @@
 <form wire:submit='createProduct' class="rounded-md border border-gray-400 p-4 flex flex-col gap-4 w-full">
     <div class="flex flex-col md:flex-row gap-4 w-full">
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-            <p class="text-sm font-medium">Serial Number</p>
-            <input type="text" placeholder="Enter Serial Number..."
-                wire:input="$set('serial_number', $event.target.value)"
-                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
-        </div>
-        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
             <p class="text-sm font-medium">Product Name</p>
             <input type="text" placeholder="Enter Name..." wire:input="$set('name', $event.target.value)"
                 class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
@@ -31,31 +25,59 @@
             </div>
         </div>
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-            <p class="text-sm font-medium">Product Price</p>
-            <input wire:input="$set('price', $event.target.value)" type="number" step="0.01"
-                placeholder="Enter Price..."
+            <p class="text-sm font-medium">Supplier/Distrubutor</p>
+            <input type="text" placeholder="Supplier/Distrubutor..."
+                wire:input="$set('supplier', $event.target.value)"
                 class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
         </div>
     </div>
     <div class="flex flex-col md:flex-row gap-4 w-full">
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-            <p class="text-sm font-medium">Current Stock</p>
-            <input wire:input="$set('stock', $event.target.value)" type="number" placeholder="Enter Quantity..."
-                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
-        </div>
-        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
             <p class="text-sm font-medium">Minimum Stock</p>
-            <input wire:input="$set('stock_min_limit', $event.target.value)" type="number"
-                placeholder="Enter Quantity..."
+            <input wire:input="$set('min_limit', $event.target.value)" type="number" placeholder="Enter Quantity..."
                 class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
         </div>
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-            <p class="text-sm font-medium">Maximum Stock</p>
-            <input wire:input="$set('stock_max_limit', $event.target.value)" type="number"
-                placeholder="Enter Quantity..."
+            <p class="text-sm font-medium">Original Price</p>
+            <input wire:input="$set('original_price', $event.target.value)" type="number" step="0.01"
+                placeholder="Enter Price..."
+                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+        </div>
+        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+            <p class="text-sm font-medium">Retail Price</p>
+            <input wire:input="$set('retail_price', $event.target.value)" type="number" step="0.01"
+                placeholder="Enter Price..."
                 class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
         </div>
     </div>
+    <div class="flex flex-col text-[#4f4f4f] gap-2 flex-1">
+        <p class="text-sm font-medium">Serial Numbers</p>
+
+        @foreach ($serial_numbers as $index => $serial)
+            <div class="flex items-center w-full gap-2">
+                <input type="text" wire:model="serial_numbers.{{ $index }}" placeholder="Serial Number"
+                    class="flex-1 text-sm md:text-base pl-4 py-2 text-[#797979] border border-gray-500 rounded-md focus:outline-none transition-all duration-200" />
+
+                @if (count($serial_numbers) > 1 && !empty($serial))
+                    <button type="button" wire:click="removeSerial({{ $index }})"
+                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md flex items-center justify-center transition-all duration-200">
+                        ✕
+                    </button>
+                @endif
+            </div>
+        @endforeach
+
+        <button type="button" wire:click="addSerial"
+            class="mt-2 flex items-center gap-2 px-4 py-2 bg-[#203D3F] rounded-md text-white hover:bg-[#1a3031] transition-colors duration-200 w-fit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
+                <path d="M5 12h14" />
+                <path d="M12 5v14" />
+            </svg>
+            <p class="text-sm">Add Serial</p>
+        </button>
+    </div>
+
     <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1 w-full">
         <p class="text-sm font-medium">Product Description</p>
         <textarea wire:input="$set('description', $event.target.value)" rows="5"
@@ -97,9 +119,9 @@
     <div class="w-full flex items-center justify-end">
         <button type="submit"
             class="bg-[#16A34A] text-white rounded-md px-4 py-2 flex items-center gap-2 cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="lucide lucide-plus-icon lucide-plus">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus">
                 <path d="M5 12h14" />
                 <path d="M12 5v14" />
             </svg>

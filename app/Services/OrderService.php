@@ -16,8 +16,8 @@ class OrderService
         };
 
         return Order::query()
-            ->when($statusValue, fn ($query) => $query->where('status', $statusValue))
-            ->when($search, fn ($query) => $query->where('reference_id', 'like', '%' . $search . '%'))
+            ->when($statusValue, fn($query) => $query->where('status', $statusValue))
+            ->when($search, fn($query) => $query->where('reference_id', 'like', '%' . $search . '%'))
             ->orderBy('created_at', 'desc')
             ->paginate(10);
     }
@@ -26,8 +26,8 @@ class OrderService
     {
         return match ($status) {
             'pending' => Order::where('status', 'pending')
-                ->where('created_at', '<=',now())
-                ->where('expiry_date', '>=',now())
+                ->where('created_at', '<=', now())
+                ->where('expiry_date', '>=', now())
                 ->count(),
             'completed' => Order::where('status', 'completed')
                 ->whereDate('updated_at', now())

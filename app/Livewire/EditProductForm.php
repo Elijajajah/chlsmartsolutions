@@ -4,68 +4,92 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use Livewire\Component;
+use App\Models\ProductSerial;
 use Livewire\WithFileUploads;
 use App\Services\CategoryService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class EditProductForm extends Component
 {
     use WithFileUploads;
-    public $serial_number;
     public $name;
+    public $supplier;
     public $categoryId;
     public $categoryName;
-    public $price;
+    public $min_limit;
+    public $original_price;
+    public $retail_price;
     public $description;
-    public $stock;
-    public $stock_min_limit;
-    public $stock_max_limit;
     public $image;
     public $selectedProductId = null;
+    public $serial_numbers = [''];
 
     public function mount($id)
     {
-        $product = Product::with('inventory', 'category')->find($id);
+        $product = Product::with(['serials' => function ($query) {
+            $query->whereIn('status', ['available', 'reserved']);
+        }, 'category'])->find($id);
+
         if ($product) {
             $this->selectedProductId = $product->id;
-            $this->serial_number = $product->serial_number;
             $this->name = $product->name;
+            $this->supplier = $product->supplier;
             $this->categoryId = $product->category_id;
             $this->categoryName = $product->category->name;
-            $this->price = $product->price;
-            $this->stock = $product->inventory->stock;
-            $this->stock_min_limit = $product->inventory->stock_min_limit;
-            $this->stock_max_limit = $product->inventory->stock_max_limit;
+            $this->min_limit = $product->min_limit;
+            $this->original_price = $product->original_price;
+            $this->retail_price = $product->retail_price;
             $this->description = $product->description;
             $this->image = $product->image_url;
+            $this->serial_numbers = $product->serials->pluck('serial_number')->toArray();
         }
+    }
+
+    public function addSerial()
+    {
+        if (empty(trim(end($this->serial_numbers)))) {
+            notyf()->error('Please fill in serial number first.');
+            return;
+        }
+        $this->serial_numbers[] = '';
+    }
+
+    public function removeSerial($index)
+    {
+        unset($this->serial_numbers[$index]);
+        $this->serial_numbers = array_values($this->serial_numbers);
     }
 
     public function editProduct()
     {
-        $product = Product::with('inventory')->find($this->selectedProductId);
+        $product = Product::find($this->selectedProductId);
 
-        $hasChanges = false;
-
-        $fields = [
-            'serial_number' => $this->serial_number !== $product->serial_number,
-            'name' => $this->name !== $product->name,
-            'categoryId' => $this->categoryId != $product->category_id,
-            'price' => $this->price != $product->price,
-            'description' => $this->description !== $product->description,
-            'stock' => $this->stock != $product->inventory->stock,
-            'stock_min_limit' => $this->stock_min_limit != $product->inventory->stock_min_limit,
-            'stock_max_limit' => $this->stock_max_limit != $product->inventory->stock_max_limit,
-            'image' => $this->image !== $product->image_url,
-        ];
-
-        foreach ($fields as $changed) {
-            if ($changed) {
-                $hasChanges = true;
-                break;
-            }
+        if (!$product) {
+            notyf()->error('Product not found.');
+            return;
         }
+
+        $existingSerials = ProductSerial::where('product_id', $product->id)
+            ->whereIn('status', ['available', 'reserved'])
+            ->pluck('serial_number')
+            ->toArray();
+
+        $newSerials = array_map('trim', $this->serial_numbers);
+
+        $serialsChanged = count(array_diff($existingSerials, $newSerials)) > 0 ||
+            count(array_diff($newSerials, $existingSerials)) > 0;
+
+        $hasChanges =
+            $this->name !== $product->name ||
+            $this->supplier !== $product->supplier ||
+            $this->categoryId != $product->category_id ||
+            $this->retail_price != $product->retail_price ||
+            $this->description !== $product->description ||
+            $this->min_limit != $product->min_limit ||
+            $serialsChanged ||
+            ($this->image instanceof TemporaryUploadedFile);
 
         if (!$hasChanges) {
             notyf()->info('No changes made to the product.');
@@ -73,71 +97,124 @@ class EditProductForm extends Component
         }
 
         try {
-            $this->validate([
-                'serial_number' => 'required|max:50|unique:products,serial_number,' . $product->id,
-                'name' => 'required|max:255|unique:products,name,' . $product->id,
-                'categoryId' => 'required|exists:categories,id',
-                'price' => 'required|min:0',
-                'stock' => 'required|min:0',
-                'stock_min_limit' => 'required|min:0',
-                'stock_max_limit' => 'required|gte:stock_min_limit',
-                'description' => 'required',
-                'image' => 'nullable|max:5120'
-            ], [
-                'serial_number.required' => 'Serial Number is required.',
-                'serial_number.max' => 'Serial Number must not exceed 50 characters.',
-                'serial_number.unique' => 'This Serial Number is already taken.',
-                'name.required' => 'Product name is required.',
-                'name.max' => 'Product name must not exceed 255 characters.',
-                'name.unique' => 'This product name is already taken.',
-                'categoryId.required' => 'Please select a category.',
-                'categoryId.exists' => 'Selected category does not exist.',
-                'price.required' => 'Price is required.',
-                'price.min' => 'Price must be 0 or higher.',
-                'stock.required' => 'Stock is required.',
-                'stock.min' => 'Stock must be 0 or higher.',
-                'stock_min_limit.required' => 'Minimum stock is required.',
-                'stock_min_limit.min' => 'Minimum stock must be at least 0.',
-                'stock_max_limit.required' => 'Maximum stock is required.',
-                'stock_max_limit.gte' => 'Maximum stock must be greater than or equal to minimum stock.',
-                'description.required' => 'Product description is required.',
-                'image.max' => 'Image size must not exceed 5MB.',
-            ]);
+            $rules = [
+                'serial_numbers'     => 'required|array|min:1',
+                'serial_numbers.*'   => 'required|string|max:35|distinct',
+                'name'               => 'required|max:255|unique:products,name,' . $product->id,
+                'categoryId'         => 'required|exists:categories,id',
+                'supplier'           => 'required',
+                'original_price'     => 'required|numeric|min:0',
+                'retail_price'       => 'required|numeric|min:0',
+                'min_limit'          => 'required|integer|min:0',
+                'description'        => 'required',
+            ];
+
+            if ($this->image instanceof TemporaryUploadedFile) {
+                $rules['image'] = 'image|mimes:jpg,jpeg,png|max:5120';
+            }
+
+            $messages = [
+                'serial_numbers.required'        => 'At least one serial number is required.',
+                'serial_numbers.*.required'      => 'Each serial number must not be empty.',
+                'serial_numbers.*.max'           => 'Serial number must not exceed 35 characters.',
+                'serial_numbers.*.distinct'      => 'Duplicate serial numbers are not allowed.',
+                'name.required'                  => 'Product name is required.',
+                'name.unique'                    => 'Product name already existed.',
+                'name.max'                       => 'Product name must not exceed 255 characters.',
+                'categoryId.required'            => 'Please select a category.',
+                'categoryId.exists'              => 'The selected category does not exist.',
+                'supplier.required'              => 'Supplier/Contributor is required.',
+                'original_price.required'        => 'Original price is required.',
+                'original_price.numeric'         => 'Original price must be a number.',
+                'original_price.min'             => 'Original price must be zero or greater.',
+                'retail_price.required'          => 'Retail price is required.',
+                'retail_price.numeric'           => 'Retail price must be a number.',
+                'retail_price.min'               => 'Retail price must be zero or greater.',
+                'min_limit.required'             => 'Minimum stock is required.',
+                'min_limit.integer'              => 'Minimum stock must be an integer.',
+                'min_limit.min'                  => 'Minimum stock must be at least 0.',
+                'description.required'           => 'Product description is required.',
+                'image.image'                    => 'Uploaded file must be an image.',
+                'image.mimes'                    => 'Image must be a JPG, JPEG, or PNG file.',
+                'image.max'                      => 'Image size must not exceed 5MB.',
+            ];
+
+            $this->validate($rules, $messages);
+
+            $trimmedSerials = array_filter(array_map('trim', $this->serial_numbers));
+
+            $existingSerials = ProductSerial::whereIn('serial_number', $trimmedSerials)
+                ->where('product_id', '!=', $product->id)
+                ->pluck('serial_number')
+                ->toArray();
+
+            if (!empty($existingSerials)) {
+                $duplicates = implode(', ', $existingSerials);
+                notyf()->error("The following serial numbers already exist: {$duplicates}");
+                return;
+            }
         } catch (ValidationException $e) {
             $message = $e->validator->errors()->first();
             notyf()->error($message);
             return;
         }
 
-        $path = '/products/no_image.png';
-        if ($this->image !== $product->image_url && $this->image != null) {
-            if ($product->image_url && $product->image_url !== '/products/no_image.png') {
+
+
+        $path = $product->image_url;
+        if ($this->image instanceof TemporaryUploadedFile) {
+            if ($product->image_url && $product->image_url !== 'products/no_image.png') {
                 Storage::disk('public')->delete($product->image_url);
             }
 
-            $extension = $this->image->getClientOriginalExtension();
-            $filename = $this->name . '.' . $extension;
+            $filename = str_replace(' ', '_', strtolower($this->name)) . '_' . time() . '.' . $this->image->getClientOriginalExtension();
             $path = $this->image->storeAs('products', $filename, 'public');
         }
 
         $product->update([
-            'serial_number' => $this->serial_number,
             'name' => $this->name,
+            'supplier' => $this->supplier,
             'category_id' => $this->categoryId,
-            'price' => $this->price,
+            'original_price' => $this->original_price,
+            'retail_price' => $this->retail_price,
             'description' => $this->description,
-            'image_url' => $path
+            'min_limit' => $this->min_limit,
+            'image_url' => $path,
         ]);
 
-        $product->inventory->update([
-            'stock' => $this->stock,
-            'stock_min_limit' => $this->stock_min_limit,
-            'stock_max_limit' => $this->stock_max_limit,
-        ]);
+        if (!empty($this->serial_numbers)) {
+            $existingSerialModels = ProductSerial::where('product_id', $product->id)
+                ->whereIn('status', ['available', 'reserved'])
+                ->get();
+
+            $existingSerialNumbers = $existingSerialModels->pluck('serial_number')->toArray();
+            $newSerialNumbers = array_map('trim', $this->serial_numbers);
+
+            $serialsToDelete = array_diff($existingSerialNumbers, $newSerialNumbers);
+            if (!empty($serialsToDelete)) {
+                ProductSerial::where('product_id', $product->id)
+                    ->whereIn('serial_number', $serialsToDelete)
+                    ->delete();
+            }
+
+            foreach ($newSerialNumbers as $serial) {
+                if (empty($serial)) continue;
+
+                $existing = $existingSerialModels->firstWhere('serial_number', $serial);
+                if (!$existing) {
+                    ProductSerial::create([
+                        'product_id' => $product->id,
+                        'serial_number' => $serial,
+                        'status' => 'available',
+                    ]);
+                }
+            }
+        }
 
         notyf()->success('Product updated successfully.');
         return redirect()->route('landing.page');
     }
+
 
     public function render(CategoryService $categoryService)
     {

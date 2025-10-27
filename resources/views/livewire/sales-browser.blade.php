@@ -134,7 +134,6 @@
             <div class="min-w-[1024px] flex flex-col font-inter">
                 <div class="flex items-center bg-[#F9FAFB] text-sm text-[#878787] p-4 border-y border-[#E5E7EB]">
                     <div class="w-[15%]">CUSTOMER TYPE</div>
-                    <div class="w-[15%]">SERIAL NUMBER</div>
                     <div class="w-[22%]">PRODUCT NAME</div>
                     <div class="w-[18%] text-center">CATEGORY</div>
                     <div class="w-[10%] text-center">QUANTITY</div>
@@ -176,7 +175,6 @@
                                 <div class="bg-[#b8b8b8] text-white py-2 px-4 rounded-md text-xs">N/A</div>
                             @endif
                         </div>
-                        <div class="w-[15%] capitalize">{{ $product->serial_number }}</div>
                         <div class="w-[22%] capitalize">{{ $product->name }}</div>
                         <div class="w-[18%] text-center capitalize">{{ $product->category->name }}</div>
                         <div class="w-[10%] text-center">x{{ $quantity }}</div>

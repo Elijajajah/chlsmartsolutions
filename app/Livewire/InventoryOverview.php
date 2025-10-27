@@ -24,31 +24,27 @@ class InventoryOverview extends Component
 
     public function getStocks()
     {
-        $products = Product::with('inventory', 'orderProducts.order')->get();
+        $products = Product::with(['serials', 'category'])->get();
 
         $filtered = $products->filter(function ($product) {
-            $inventory = $product->inventory;
+            $availableStock = $product->availableReservedCount();
 
-            $pendingQuantity = $product->orderProducts
-                ->where('order.status', 'pending')
-                ->sum('quantity');
+            $minStockLimit = $product->min_limit ?? 5;
 
-            $adjustedStock = $inventory->stock + $pendingQuantity;
-
-            return $adjustedStock === 0 || $adjustedStock <= $inventory->stock_min_limit;
+            // Include products that are out of stock or low on stock
+            return $availableStock <= 0 || $availableStock <= $minStockLimit;
         });
 
-        // Sort by least quantity first
+        // Sort by stock (lowest first)
         $sorted = $filtered->sortBy(function ($product) {
-            $inventory = $product->inventory;
-            $pendingQuantity = $product->orderProducts
-                ->where('order.status', 'pending')
-                ->sum('quantity');
-            return $inventory->stock + $pendingQuantity;
+            return $product->availableReservedCount();
         });
 
+        // Return limited list (for dashboard etc.)
         return $sorted->take($this->take)->values();
     }
+
+
 
 
     public function render()

@@ -13,7 +13,7 @@
                 <div class="flex flex-col">
                     @foreach ($products as $product)
                         <div class="flex items-center text-center font-inter font-medium text-sm py-3">
-                            <div class="w-[35%] text-start pl-4 line-clamp-1">{{ $product->name }}</div>
+                            <div class="w-[35%] text-start pl-4 line-clamp-1">{{ ucwords($product->name) }}</div>
                             <div class="w-[10%]">{{ $product->stock }}</div>
                             <div class="w-[10%]">
                                 <div class="w-full flex items-center justify-center">

@@ -19,7 +19,7 @@ class ProductSearch extends Component
     public function updatedQuery()
     {
         $this->results = Product::where('name', 'like', '%' . $this->query . '%')
-            ->limit(5)
+            ->limit(8)
             ->get();
     }
 
@@ -42,7 +42,7 @@ class ProductSearch extends Component
     public function removeProduct($id)
     {
         foreach ($this->selected as $index => $item) {
-            if ($item->id == $id){
+            if ($item->id == $id) {
                 unset($this->selected[$index]);
             }
         }

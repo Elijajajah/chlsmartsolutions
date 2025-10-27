@@ -13,11 +13,11 @@ class Cart extends Component
     {
         $productId = $payload['id'];
 
-        $product = Product::with(['inventory'])->findOrFail($productId);
+        $product = Product::findOrFail($productId);
 
         foreach ($this->cartItems as $item) {
-            if ($item->id == $product->id){
-                if ($item->quantity < $item->stock){
+            if ($item->id == $product->id) {
+                if ($item->quantity < $item->stock) {
                     $item->quantity++;
                     session()->put('cartItems', $this->cartItems);
                     notyf()->success('You’ve added the product to your cart.');
@@ -31,12 +31,11 @@ class Cart extends Component
             'id' => $product->id,
             'name' => $product->name,
             'description' => $product->description,
-            'price' => $product->price,
+            'price' => $product->retail_price,
             'image_url' => $product->image_url,
-            'stock' => $product->inventory->stock,
+            'stock' => $product->availableReservedCount(),
             'quantity' => 1,
         ];
-
         notyf()->success('You’ve added the product to your cart.');
 
         session()->put('cartItems', $this->cartItems);
@@ -50,7 +49,7 @@ class Cart extends Component
     public function increaseQuantity($id)
     {
         foreach ($this->cartItems as $item) {
-            if ($item->id == $id && $item->quantity < $item->stock){
+            if ($item->id == $id && $item->quantity < $item->stock) {
                 $item->quantity++;
             }
         }
@@ -60,7 +59,7 @@ class Cart extends Component
     public function decreaseQuantity($id)
     {
         foreach ($this->cartItems as $item) {
-            if ($item->id == $id && $item->quantity > 1){
+            if ($item->id == $id && $item->quantity > 1) {
                 $item->quantity--;
             }
         }
@@ -70,7 +69,7 @@ class Cart extends Component
     public function removeItem($id)
     {
         foreach ($this->cartItems as $index => $item) {
-            if ($item->id == $id){
+            if ($item->id == $id) {
                 unset($this->cartItems[$index]);
             }
         }

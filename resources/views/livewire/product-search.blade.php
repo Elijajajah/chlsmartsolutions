@@ -1,8 +1,7 @@
 <div class="flex items-center gap-4">
     <div class="relative">
         <div class="relative text-[#797979]">
-            <input type="text" wire:input.debounce.300ms="$set('query', $event.target.value)"
-                placeholder="Search product..."
+            <input type="text" wire:model.live="query" placeholder="Search product..."
                 class="w-full pr-10 pl-4 py-2  border border-gray-500 rounded-md focus:outline-none" />
             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"

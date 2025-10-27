@@ -42,7 +42,7 @@ class OrderBrowser extends Component
     public function render(OrderService $orderService)
     {
         $orders = $orderService->getFilteredOrders($this->selectedStatus, $this->search);
-        return view('livewire.order-browser',[
+        return view('livewire.order-browser', [
             'orders' => $orders
         ]);
     }
@@ -56,7 +56,7 @@ class OrderBrowser extends Component
     public function updateStatus($id)
     {
         $order = Order::find($id);
-        if ($order->status == 'pending'){
+        if ($order->status == 'pending') {
             $order->status = 'completed';
             $order->updated_at = now();
             $order->save();
@@ -72,7 +72,7 @@ class OrderBrowser extends Component
             $this->dispatch('notificationRead')->to('sidebar');
             $this->closeModal();
             return;
-        }elseif ($order->status == 'completed') {
+        } elseif ($order->status == 'completed') {
             notyf()->error('Order already been completed.');
             return;
         }
@@ -94,7 +94,7 @@ class OrderBrowser extends Component
 
         $total = 0.0;
         $products = session()->get('cartItems', []);
-        foreach ($products as $product){
+        foreach ($products as $product) {
             $total += $product->quantity * $product->price;
         }
 

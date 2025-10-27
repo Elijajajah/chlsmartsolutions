@@ -1,22 +1,30 @@
 <div class="w-full bg-white rounded-lg flex flex-col p-4">
     <h1 class="text-[#203D3F] font-semibold">Inventory Overview</h1>
     <p class="text-[0.6rem] text-[#BDBEC3] mb-2">Track products needing restock</p>
+
     <div class="flex flex-col gap-2">
         @forelse ($products as $product)
-            @if ($product->inventory->stock == 0)
+            @if ($product->availableCount() <= 0)
+                {{-- Out of stock --}}
                 <div class="flex items-center justify-between p-2 text-sm rounded-sm w-full border-2 border-[#DC2626]">
-                    <p class="line-clamp-1 capitalizee w-[70%]">{{ $product->name }}</p>
-                    <p class="text-[#DC2626] font-medium">{{ $product->inventory->stock }}<span
-                            class="font-normal text-[0.6rem]">left</span></p>
+                    <p class="line-clamp-1 capitalize w-[70%]">{{ $product->name }}</p>
+                    <p class="text-[#DC2626] font-medium">
+                        {{ $product->availableCount() < 0 ? 0 : $product->availableCount() }}
+                        <span class="font-normal text-[0.6rem]">left</span>
+                    </p>
                 </div>
-            @else
+            @elseif ($product->availableCount() <= 5)
+                {{-- Low stock --}}
                 <div class="flex items-center justify-between p-2 text-sm rounded-sm w-full border-2 border-[#EAB308]">
                     <p class="line-clamp-1 capitalize w-[70%]">{{ $product->name }}</p>
-                    <p class="text-[#EAB308] font-medium">{{ $product->inventory->stock }}<span
-                            class="font-normal text-[0.6rem]">left</span></p>
+                    <p class="text-[#EAB308] font-medium">
+                        {{ $product->availableCount() }}
+                        <span class="font-normal text-[0.6rem]">left</span>
+                    </p>
                 </div>
             @endif
         @empty
+            {{-- No products to restock --}}
             <div class="flex flex-col items-center justify-around pt-8 pb-7.5 text-[#BDBEC3] gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -33,6 +41,7 @@
             </div>
         @endforelse
     </div>
+
     @if ($products->count() >= $take)
         <div wire:click="setActive('product')" class="flex py-2 text-sm cursor-pointer">
             <p class="text-[#203D3F] font-medium">See more...</p>

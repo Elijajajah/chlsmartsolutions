@@ -179,14 +179,37 @@
                 <div class="flex flex-col bg-[#F9FAFB] p-2 rounded-md text-sm">
                     <h1 class="font-medium text-base">{{ $selectedStock->name }}</h1>
                     <p class="text-[#707988]">Currect Stock: {{ $selectedStock->inventory->stock }}</p>
-                    <p class="text-[#707988]">Maximum Capacity: {{ $selectedStock->inventory->stock_max_limit }}
                     </p>
                 </div>
                 <div class="w-full">
-                    <p class="font-medium">Quantity to Add</p>
-                    <input wire:input.debounce.300ms="$set('quantity', $event.target.value)" type="number"
-                        placeholder="Enter a quantity..."
-                        class="w-full pr-10 pl-4 py-2  border border-gray-500 rounded-md focus:outline-none" />
+                    <p class="font-medium">Serial Numbers</p>
+                    <div class="flex flex-col text-[#4f4f4f] gap-2 flex-1">
+                        @foreach ($serial_numbers as $index => $serial)
+                            <div class="flex items-center w-full gap-2">
+                                <input type="text" wire:model="serial_numbers.{{ $index }}"
+                                    placeholder="Serial Number"
+                                    class="flex-1 text-sm md:text-base pl-4 py-2 text-[#797979] border border-gray-500 rounded-md focus:outline-none transition-all duration-200" />
+
+                                @if (count($serial_numbers) > 1 && !empty($serial))
+                                    <button type="button" wire:click="removeSerial({{ $index }})"
+                                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md flex items-center justify-center transition-all duration-200">
+                                        ✕
+                                    </button>
+                                @endif
+                            </div>
+                        @endforeach
+
+                        <button type="button" wire:click="addSerial"
+                            class="mt-2 flex items-center gap-2 px-4 py-2 bg-[#203D3F] rounded-md text-white hover:bg-[#1a3031] transition-colors duration-200 w-fit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="lucide lucide-plus">
+                                <path d="M5 12h14" />
+                                <path d="M12 5v14" />
+                            </svg>
+                            <p class="text-sm">Add Serial</p>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex items-center justify-center w-full gap-4 mt-6 text-sm">
                     <button wire:click='restockProduct({{ $selectedStock->id }})'
@@ -297,9 +320,9 @@
                                     <p class="line-clamp-1 capitalize">{{ $product->category->name }}</p>
                                 </div>
                                 <div class="w-[10%] py-7.5 md:py-9.5 px-1 border-x border-[#EEF2F5]">
-                                    {{ $product->adjusted_stock }}/{{ $product->inventory->stock_max_limit }}
+                                    {{ $product->adjusted_stock }}
                                 </div>
-                                <div class="w-[15%] py-4 px-1">₱{{ number_format($product->price, 2) }}</div>
+                                <div class="w-[15%] py-4 px-1">₱{{ number_format($product->retail_price, 2) }}</div>
                                 <div
                                     class="w-[15%] pr-1 border-x border-[#EEF2F5] py-6 md:py-8 flex items-center justify-center">
                                     @if ($product->adjusted_stock == 0)
@@ -314,7 +337,7 @@
                                             </svg>
                                             <p class="text-xs capitalize">Out of Stock</p>
                                         </div>
-                                    @elseif ($product->adjusted_stock <= $product->inventory->stock_min_limit)
+                                    @elseif ($product->adjusted_stock <= $product->min_limit)
                                         <div
                                             class="bg-[#ffeaba] py-2 px-4 w-fit rounded-full text-[#c77a0e] flex gap-1 items-center justify-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -579,7 +602,6 @@
             </div>
 
             <livewire:product-form />
-
         </div>
     @endif
     @if ($activeTab == 'editProduct')

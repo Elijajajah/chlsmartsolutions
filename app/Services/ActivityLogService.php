@@ -8,7 +8,7 @@ class ActivityLogService
 {
     public function saveLog($task_id, $user_id)
     {
-        $log = ActivityLog::create([
+        ActivityLog::create([
             'task_id' => $task_id,
             'user_id' => $user_id,
         ]);
