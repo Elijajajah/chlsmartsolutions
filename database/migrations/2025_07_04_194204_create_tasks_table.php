@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->enum('title', ['technical support', 'maintenance', 'installation', 'troubleshooting assistance', 'device resets', 'usage guidance']);
+            $table->enum('service', ['phone support', 'computer maintenance', 'software updates', 'signal installation', 'software installation', 'internet issues', 'slow performance', 'factory reset', 'password reset', 'device tutorial', 'software training']);
             $table->enum('priority', ['low', 'medium', 'high']);
             $table->longText('description')->nullable();
             $table->string('customer_name');

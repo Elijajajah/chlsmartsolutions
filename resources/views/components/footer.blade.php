@@ -13,7 +13,7 @@
                 <a href="#products">Products</a>
             </div>
             <div class="flex gap-6">
-                <a href="#help">Help Center</a>
+                <a href="#help">Services</a>
                 <a href="">Offers</a>
             </div>
         </div>

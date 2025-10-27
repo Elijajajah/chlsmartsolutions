@@ -7,7 +7,7 @@ use App\Http\Controllers\RouteController;
 use App\Http\Controllers\CSVExportController;
 
 
-Route::middleware('guest_or_customer')->group(function() {
+Route::middleware('guest_or_customer')->group(function () {
     Route::get('/', [RouteController::class, 'goToLandingPage'])->name('landing.page');
 });
 
@@ -43,20 +43,19 @@ Route::middleware('role:customer')->group(function () {
     Route::get('/checkout', [RouteController::class, 'goToCheckoutPage'])->name('checkout.page');
 });
 
-Route::middleware('role:admin')->group(function() {
+Route::middleware('role:admin')->group(function () {
     Route::get('/admin', [RouteController::class, 'goToAdminPage'])->name('admin');
     Route::get('/export/all', [CSVExportController::class, 'exportAll'])->name('export.all');
 });
 
-Route::middleware('role:admin_officer')->group(function() {
+Route::middleware('role:admin_officer')->group(function () {
     Route::get('/admin_officer', [RouteController::class, 'goToAdminOfficerPage'])->name('admin_officer');
 });
 
-Route::middleware('role:cashier')->group(function() {
+Route::middleware('role:cashier')->group(function () {
     Route::get('/cashier', [RouteController::class, 'goToCashierPage'])->name('cashier');
 });
 
-Route::middleware('role:technician')->group(function() {
+Route::middleware('role:technician')->group(function () {
     Route::get('/technician', [RouteController::class, 'goToTechnicianPage'])->name('technician');
 });
-
