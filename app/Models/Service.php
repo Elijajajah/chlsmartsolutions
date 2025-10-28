@@ -11,6 +11,7 @@ class Service extends Model
     protected $fillable = [
         'service_category_id',
         'service',
+        'price',
     ];
 
     public function tasks()

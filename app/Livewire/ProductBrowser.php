@@ -6,6 +6,7 @@ use App\Models\Product;
 use Livewire\Component;
 use App\Models\Category;
 use Livewire\WithPagination;
+use App\Models\ProductSerial;
 use App\Services\ProductService;
 use App\Services\CategoryService;
 use Livewire\WithoutUrlPagination;
@@ -46,10 +47,10 @@ class ProductBrowser extends Component
         $this->categories = $categoryService->getAllCategory();
     }
 
-    public function selectStock($stock_id)
+    public function selectStock($id)
     {
         $this->showModal = true;
-        $this->selectedStock = Product::with('inventory')->find($stock_id);
+        $this->selectedStock = Product::find($id);
         $this->serial_numbers = [''];
     }
 
@@ -72,7 +73,7 @@ class ProductBrowser extends Component
             return;
         }
 
-        $existingSerials = \App\Models\ProductSerial::whereIn('serial_number', $this->serial_numbers)->pluck('serial_number')->toArray();
+        $existingSerials = ProductSerial::whereIn('serial_number', $this->serial_numbers)->pluck('serial_number')->toArray();
         if (!empty($existingSerials)) {
             $duplicates = implode(', ', $existingSerials);
             notyf()->error("These serial numbers already exist: {$duplicates}");

@@ -178,7 +178,7 @@
                 <h1 class="font-bold text-lg">Restock Product</h1>
                 <div class="flex flex-col bg-[#F9FAFB] p-2 rounded-md text-sm">
                     <h1 class="font-medium text-base">{{ $selectedStock->name }}</h1>
-                    <p class="text-[#707988]">Currect Stock: {{ $selectedStock->inventory->stock }}</p>
+                    <p class="text-[#707988]">Currect Stock: {{ $selectedStock->availableCount() }}</p>
                     </p>
                 </div>
                 <div class="w-full">
@@ -236,8 +236,7 @@
             <div class="flex md:items-center justify-between flex-col-reverse md:flex-row gap-2 md:gap-0">
                 <div class="flex flex-col md:flex-row w-full gap-2 md:gap-4">
                     <div class="relative text-[#797979] w-full md:w-[280px]">
-                        <input wire:input.debounce.300ms="$set('search', $event.target.value)" type="text"
-                            placeholder="Search products..."
+                        <input wire:model.live="search" type="text" placeholder="Search products..."
                             class="w-full md:w-[280px] pr-10 pl-4 py-2.5 border border-gray-500 rounded-md focus:outline-none text-sm" />
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -497,7 +496,7 @@
                                 <div class="w-[25%] py-4 px-1 border-x border-[#EEF2F5]">
                                     {{ \Carbon\Carbon::parse($category->created_at)->format('F d, Y') }}
                                 </div>
-                                <div class="w-[15%] pr-4 py-3 flex items-center justify-center gap-4 text-xs">
+                                <div class="w-[15%] pr-4 py-3 flex items-center justify-center gap-2 text-xs">
                                     <button wire:click='editCategory({{ $category->id }})'
                                         class="cursor-pointer text-[#3B82F6]">
                                         @if ($editingId == $category->id)

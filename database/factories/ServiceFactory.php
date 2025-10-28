@@ -17,7 +17,8 @@ class ServiceFactory extends Factory
     {
         return [
             'service_category_id' => null,
-            'service' => 'Default', // placeholder; overridden below
+            'service' => 'Default',
+            'price' => fake()->randomFloat(2, 100, 3000),
         ];
     }
 
@@ -59,6 +60,7 @@ class ServiceFactory extends Factory
                 'Software Training',
             ],
         ];
+        $faker = fake();
 
         foreach ($categories as $categoryName => $services) {
             // ✅ Create the parent category
@@ -71,6 +73,7 @@ class ServiceFactory extends Factory
                 Service::create([
                     'service_category_id' => $category->id,
                     'service' => $serviceName,
+                    'price' => $faker->randomFloat(2, 100, 3000),
                 ]);
             }
         }

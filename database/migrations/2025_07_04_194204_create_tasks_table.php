@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('customer_name');
             $table->string('customer_phone');
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->enum('status', ['pending', 'completed', 'missed', 'unassigned', 'overdue'])->default('pending');
+            $table->enum('status', ['pending', 'completed', 'missed', 'unassigned', 'overdue'])->default('unassigned');
             $table->date('expiry_date');
             $table->timestamps();
         });

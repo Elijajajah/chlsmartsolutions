@@ -28,4 +28,9 @@ class Task extends Model
     {
         return $this->hasOne(ActivityLog::class);
     }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
 }

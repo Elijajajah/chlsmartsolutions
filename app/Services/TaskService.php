@@ -23,25 +23,11 @@ class TaskService
 
     public function getFilteredTask($status, $prio)
     {
-        return Task::with('user')
+        return Task::with('user', 'service.serviceCategory')
             ->when($status && $status !== 'all', fn($query) => $query->where('status', $status))
             ->when($prio && $prio !== 'all', fn($query) => $query->where('priority', $prio))
             ->orderBy('expiry_date', 'asc')
             ->paginate(9);
-    }
-
-    public function countTask($status = null)
-    {
-        return match ($status) {
-            'completed', 'pending' => Task::where('status', $status)
-                ->whereDate('created_at', now())
-                ->whereDate('expiry_date', now())
-                ->count(),
-
-            'missed' => Task::where('status', 'missed')->count(),
-
-            default => Task::count(),
-        };
     }
 
     public function createTask(array $data, bool $withExpiry = true): Task
