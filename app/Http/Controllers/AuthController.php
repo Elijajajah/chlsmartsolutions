@@ -33,14 +33,14 @@ class AuthController
             'password.max' => 'Password must not exceed 25 characters.',
         ]);
 
-        if ($validator->fails()){
+        if ($validator->fails()) {
             $message = $validator->errors()->first();
             notyf()->error($message);
             return redirect()->back()->withInput();
         }
 
         $user = User::where('username', $request->username)->first();
-        if (!Hash::check($request->password, $user->password)){
+        if (!Hash::check($request->password, $user->password)) {
             notyf()->error('Invalid credentials');
             return redirect()->back()->withInput();
         }

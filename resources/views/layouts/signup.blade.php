@@ -70,9 +70,38 @@
                             class="outline outline-[#E0E0E0] w-full rounded-md pl-16 pr-3 py-2 bg-transparent text-white mb-4" />
                     </div>
                     <label for="password" class="block mb-2 text-sm text-white">Password</label>
-                    <input id="password" type="password" name="password"
-                        class="outline outline-[#E0E0E0] w-full rounded-md px-3 py-2 bg-transparent text-white" />
+                    <div class="relative w-full">
+                        <input id="password" type="password" name="password"
+                            class="outline outline-[#E0E0E0] w-full rounded-md px-3 py-2 bg-transparent text-white pr-10"
+                            placeholder="Enter your password" />
 
+                        <!-- Toggle Button (Eye Icon) -->
+                        <button type="button" id="togglePassword"
+                            class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white">
+                            <!-- Default: eye-slash -->
+                            <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                class="lucide lucide-eye-off-icon lucide-eye-off">
+                                <path
+                                    d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+                                <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+                                <path
+                                    d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+                                <path d="m2 2 20 20" />
+                            </svg>
+
+                            <!-- When visible: eye -->
+                            <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                class="lucide lucide-eye-icon lucide-eye hidden">
+                                <path
+                                    d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
                     <button
                         class="w-full text-sm md:text-base cursor-pointer font-semibold mt-8 bg-[#5AA526] rounded-lg py-2"
                         type="submit">Sign
@@ -83,8 +112,24 @@
                             href="/signin">Sign
                             in</a></span></p>
             </div>
-
-
         </div>
     </section>
 </x-default>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordField = document.getElementById('password');
+        const toggleButton = document.getElementById('togglePassword');
+        const eyeOpen = document.getElementById('eyeOpen');
+        const eyeClosed = document.getElementById('eyeClosed');
+
+        if (passwordField && toggleButton) {
+            toggleButton.addEventListener('click', () => {
+                const isHidden = passwordField.type === 'password';
+                passwordField.type = isHidden ? 'text' : 'password';
+                eyeOpen.classList.toggle('hidden', !isHidden);
+                eyeClosed.classList.toggle('hidden', isHidden);
+            });
+        }
+    });
+</script>

@@ -13,6 +13,17 @@
     --font-poppins: "Poppins", sans-serif;
 }
 
+/* Disable Edge & IE built-in reveal button */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}
+
+/* Disable Chrome's built-in password icon */
+input[type="password"]::-webkit-textfield-decoration-container {
+    display: none;
+}
+
 input:-webkit-autofill {
     background-color: transparent !important;
     -webkit-text-fill-color: white !important;
