@@ -2,26 +2,90 @@
 
 namespace App\Livewire;
 
+use App\Models\Task;
+use App\Models\Service;
 use Livewire\Component;
+use Illuminate\Support\Str;
+use App\Models\ServiceCategory;
+use Illuminate\Support\Facades\Auth;
+use App\Services\NotificationService;
+use Illuminate\Validation\ValidationException;
 
 class HelpRequest extends Component
 {
-    public $service = null;
-    public $category = null;
-    public $preferredDate;
-    public $priority;
-    public $details;
-    public $showForm = false;
+    public $category = 'all';
+    public $search = '';
+    public $selectedService = null;
+    public $selectedCategory = null;
+    public $priority = '', $description = '';
 
-    public function selectService($service, $category)
+    public function selectService($categoryId, $serviceId)
     {
-        $this->service = $service;
-        $this->category = $category;
-        $this->showForm = true;
+        if (!Auth::check()) {
+            return redirect()->route('signin.page');
+        }
+        $service = Service::find($serviceId);
+        $category = ServiceCategory::find($categoryId);
+        $this->selectedService = $service;
+        $this->selectedCategory = $category;
+    }
+
+    public function closeRequest()
+    {
+        $this->selectedService = null;
+        $this->selectedCategory = null;
+    }
+
+    public function createRequest()
+    {
+        try {
+            $this->validate([
+                'selectedService.id' => 'required|exists:services,id',
+                'priority' => 'required|in:low,medium,high',
+                'description' => 'nullable|string',
+            ], [
+                'selectedService.id.required' => 'Please select a service.',
+                'selectedService.id.exists' => 'The selected service is invalid.',
+                'priority.required' => 'Please select a priority level.',
+                'priority.in' => 'The selected priority is invalid.',
+            ]);
+        } catch (ValidationException $e) {
+            $message = $e->validator->errors()->first();
+            notyf()->error($message);
+            return;
+        }
+
+        // Create task
+        Task::create([
+            'service_id' => $this->selectedService->id,
+            'priority' => $this->priority,
+            'description' => $this->description,
+            'customer_name' => Auth::user()->fullname,
+            'customer_phone' => Auth::user()->phone_number,
+            'user_id' => null,
+            'status' => 'unassigned',
+            'expiry_date' => null,
+        ]);
+
+        notyf()->success('Service request successfully.');
+        $this->closeRequest();
     }
 
     public function render()
     {
-        return view('livewire.help-request');
+        $categories = ServiceCategory::with('services')
+            ->when($this->category && $this->category !== 'all', function ($query) {
+                $query->where('id', $this->category);
+            })
+            ->when($this->search, function ($query) {
+                $query->whereHas('services', function ($q) {
+                    $q->where('service', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->orderBy('category')
+            ->paginate(6);
+
+
+        return view('livewire.help-request', compact('categories'));
     }
 }

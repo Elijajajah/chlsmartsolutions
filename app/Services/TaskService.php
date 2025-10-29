@@ -29,17 +29,4 @@ class TaskService
             ->orderBy('created_at', 'desc')
             ->paginate(9);
     }
-
-    public function createTask(array $data, bool $withExpiry = true): Task
-    {
-        if ($withExpiry) {
-            $data['expiry_date'] = $data['expiry_date'] ?? now()->addWeek();
-        } else {
-            $data['expiry_date'] = null;
-        }
-
-        $data['user_id'] = $data['user_id'] ?? null;
-
-        return Task::create($data);
-    }
 }

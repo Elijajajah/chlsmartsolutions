@@ -153,7 +153,18 @@ class TaskBrowser extends Component
             'customer_name' => $this->newEditFullName,
             'customer_phone' => $this->newEditPhoneNumber,
             'description' => $this->newEditDescription,
+            'status' => 'pending',
         ]);
+
+        // Create technician notification (if assigned)
+        if ($this->newEditTechnician) {
+            app(NotificationService::class)->createNotif(
+                $task->user_id,
+                "New Task Assigned",
+                'A new task for "' . Str::title(optional($task->service)->service ?? 'Unknown Service') . '" has been assigned to you. Please check your task list for details.',
+                ['technician'],
+            );
+        }
 
         notyf()->success('Task updated successfully.');
         $this->closeEditTask();

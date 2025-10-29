@@ -103,6 +103,21 @@
 
         <livewire:customer-browser />
 
+        <section class="relative h-dvh w-full bg-cover bg-center flex items-center justify-center text-white"
+            style="background-image: url('{{ asset('images/customer/about_2.png') }}')">
+
+            <!-- Backdrop overlay -->
+            <div class="absolute inset-0 bg-[#478B18]/80"></div>
+
+            <!-- Text content -->
+            <div class="relative z-10 text-center px-4">
+                <h1 class="text-3xl md:text-5xl font-bold mb-4">What service do you need?</h1>
+                <p class="text-lg md:text-xl max-w-2xl mx-auto">
+                    Select a category to view available services tailored to your needs.
+                </p>
+            </div>
+        </section>
+
         <section id="help">
             <livewire:help-request />
         </section>
