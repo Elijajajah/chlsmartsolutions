@@ -53,7 +53,7 @@ class CheckOrderExpiry extends Command
                 $order->user_id,
                 'Order Expired',
                 "The order {$order->reference_id} has expired.",
-                ['admin', 'cashier', 'admin_officer'],
+                ['owner', 'cashier', 'admin_officer'],
             );
 
             $this->info("Order ID {$order->id} ({$order->reference_id}) has expired and serials restored.");

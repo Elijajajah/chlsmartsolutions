@@ -9,14 +9,14 @@ class UserService
     public function countStaff($role)
     {
         return match ($role) {
-            'staff' => User::whereNotIn('role', ['customer', 'admin'])->where('status', 'active')->count(),
+            'staff' => User::whereNotIn('role', ['customer', 'owner'])->where('status', 'active')->count(),
             default => User::where('role', $role)->where('status', 'active')->count(),
         };
     }
 
     public function getStaffs($search, $role, $status)
     {
-        return User::whereNotIn('role', ['customer', 'admin'])
+        return User::whereNotIn('role', ['customer', 'owner'])
             ->when($search, function ($query) use ($search) {
                 $query->where('fullname', 'like', '%' . $search . '%');
             })

@@ -41,9 +41,9 @@ class RouteController
     }
 
 
-    public function goToAdminPage()
+    public function goToOwnerPage()
     {
-        return view('admin.admin');
+        return view('owner.owner');
     }
 
     public function goToAdminOfficerPage()

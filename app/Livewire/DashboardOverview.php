@@ -39,9 +39,9 @@ class DashboardOverview extends Component
 
     public function getStaffProperty()
     {
-        return User::whereNotIn('role', ['customer', 'admin'])
-        ->where('status', 'active')
-        ->count();
+        return User::whereNotIn('role', ['customer', 'owner'])
+            ->where('status', 'active')
+            ->count();
     }
 
     public function getTotalProductProperty()

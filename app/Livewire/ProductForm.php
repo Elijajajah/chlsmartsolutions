@@ -119,7 +119,7 @@ class ProductForm extends Component
             Auth::user()->id,
             "Product Added Successfully",
             "{$product->name} has been successfully added to your inventory.",
-            ['admin', 'cashier', 'admin_officer'],
+            ['owner', 'cashier', 'admin_officer'],
         );
 
         notyf()->success('Product created successfully');

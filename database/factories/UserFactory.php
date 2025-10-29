@@ -24,12 +24,12 @@ class UserFactory extends Factory
         return $user;
     }
 
-    public function admin(): static
+    public function owner(): static
     {
         return $this->state(fn() => [
             'fullname' => 'Jiro Elijah Aguilar',
-            'role' => 'admin',
-            'username' => 'jiroadmin',
+            'role' => 'owner',
+            'username' => 'jiroowner',
         ]);
     }
 

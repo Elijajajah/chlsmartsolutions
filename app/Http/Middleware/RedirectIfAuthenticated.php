@@ -20,7 +20,7 @@ class RedirectIfAuthenticated
             $role = Auth::user()->role;
 
             return match ($role) {
-                'admin' => redirect()->route('admin'),
+                'owner' => redirect()->route('owner'),
                 'admin_officer' => redirect()->route('admin_officer'),
                 'cashier' => redirect()->route('cashier'),
                 'technician' => redirect()->route('technician'),

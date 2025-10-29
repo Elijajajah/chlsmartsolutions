@@ -54,7 +54,7 @@ class AuthController
         notyf()->success('You\'re now signed in.');
 
         return match ($user->role) {
-            'admin' => redirect()->route('admin'),
+            'owner' => redirect()->route('owner'),
             'admin_officer' => redirect()->route('admin_officer'),
             'cashier' => redirect()->route('cashier'),
             'technician' => redirect()->route('technician'),

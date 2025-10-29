@@ -77,7 +77,7 @@ class OrderBrowser extends Component
             Auth::user()->id,
             'Order Completed',
             "{$order->reference_id} placed by {$order->user->fullname} has been successfully completed.",
-            ['admin', 'cashier', 'admin_officer'],
+            ['owner', 'cashier', 'admin_officer'],
         );
 
         notyf()->success('Order has been completed.');

@@ -42,11 +42,11 @@ class ExpenseForm extends Component
         $expense = Expense::create($validated);
         notyf()->success('Expense saved successfully.');
         app(NotificationService::class)->createNotif(
-                    Auth::user()->id,
-                    "Expense Added Successfully",
-                    "{$expense->title} has been added successfully.",
-                    ['admin', 'cashier', 'admin_officer'],
-                );
+            Auth::user()->id,
+            "Expense Added Successfully",
+            "{$expense->title} has been added successfully.",
+            ['owner', 'cashier', 'admin_officer'],
+        );
 
         return redirect()->route('landing.page');
     }

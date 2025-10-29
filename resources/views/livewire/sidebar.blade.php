@@ -92,7 +92,7 @@
                         @php
                             $user = auth()->user();
                             $role = match ($user->role) {
-                                'admin' => 'Admin',
+                                'owner' => 'Owner',
                                 'admin_officer' => 'Admin Officer',
                                 'cashier' => 'Cashier',
                                 'technician' => match ($user->technicianRole->role ?? null) {

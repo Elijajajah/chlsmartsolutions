@@ -80,11 +80,11 @@ class UserForm extends Component
         };
 
         app(NotificationService::class)->createNotif(
-                    $user->id,
-                    "Staff Registered Successfully",
-                    "{$user->fullname} has been registered as {$role} successfully.",
-                    ['admin', 'cashier', 'admin_officer'],
-                );
+            $user->id,
+            "Staff Registered Successfully",
+            "{$user->fullname} has been registered as {$role} successfully.",
+            ['owner', 'cashier', 'admin_officer'],
+        );
 
         return redirect()->route('landing.page');
     }
