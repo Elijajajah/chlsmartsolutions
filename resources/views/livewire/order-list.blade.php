@@ -11,25 +11,34 @@
                     <div class="w-[5%]"></div>
                 </div>
                 <div class="flex flex-col">
-                    @foreach ($products as $product)
+                    @foreach ($products as $index => $product)
+                        @php
+                            $quantity = isset($product->serials) ? count($product->serials) : $product->quantity ?? 1;
+                        @endphp
                         <div class="flex items-center text-center font-inter font-medium text-sm py-3">
                             <div class="w-[35%] text-start pl-4 line-clamp-1">{{ ucwords($product->name) }}</div>
                             <div class="w-[10%]">{{ $product->stock }}</div>
+
                             <div class="w-[10%]">
                                 <div class="w-full flex items-center justify-center">
-                                    <input type="number" wire:model.lazy="products.{{ $loop->index }}.quantity"
+                                    <input type="number" min="1" max="{{ $product->stock }}"
+                                        wire:model.live="products.{{ $index }}.quantity"
+                                        value="{{ $quantity }}"
                                         class="w-[60%] text-center focus:outline-none border-b" />
                                 </div>
                             </div>
+
                             <div class="w-[20%]">₱{{ number_format($product->price, 2) }}</div>
-                            <div class="w-[20%]">₱{{ number_format($product->price * $product->quantity, 2) }}</div>
-                            <div class="w-[5%]flex items-center justify-center">
+                            <div class="w-[20%]">
+                                ₱{{ number_format($product->price * $quantity, 2) }}
+                            </div>
+
+                            <div class="w-[5%] flex items-center justify-center">
                                 <button class="cursor-pointer text-red-500"
-                                    wire:click='removeProduct({{ $product->id }})'>
+                                    wire:click="removeProduct({{ $product->id }})">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round"
-                                        class="lucide lucide-trash2-icon lucide-trash-2">
+                                        stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M10 11v6" />
                                         <path d="M14 11v6" />
                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />

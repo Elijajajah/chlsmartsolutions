@@ -23,8 +23,9 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function orderProducts()
+    public function productSerials()
     {
-        return $this->hasMany(OrderProduct::class);
+        return $this->belongsToMany(ProductSerial::class, 'order_product_serial')
+            ->withTimestamps();
     }
 }

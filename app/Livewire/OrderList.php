@@ -13,62 +13,85 @@ class OrderList extends Component
     public function mount()
     {
         $saved = session()->get('cartItems', []);
-        $this->products = collect($saved)->map(function ($item) {
-            return (object) $item;
-        })->toArray();
+        $this->products = collect($saved)->map(fn($item) => (object) $item)->toArray();
     }
 
     public function updatedProducts($value, $key)
     {
         [$index, $field] = explode('.', $key);
+        if ($field !== 'quantity') return;
 
-        if ($field === 'quantity') {
-            $product = $this->products[$index];
-            $stock = $product->stock;
+        $product = $this->products[$index] ?? null;
+        if (!$product) return;
 
-            $product->quantity = max(1, min((int) $product->quantity, $stock));
-            session()->put('cartItems', $this->products);
+        $productModel = Product::with('serials')->find($product->id);
+        if (!$productModel) return;
+
+        // Get available serials
+        $availableSerials = $productModel->serials()
+            ->where('status', 'available')
+            ->pluck('serial_number')
+            ->toArray();
+
+        $requestedQuantity = max(1, min((int) $value, count($availableSerials)));
+        $currentSerials = $product->serials ?? [];
+
+        // Assign random serials if increasing quantity
+        if ($requestedQuantity > count($currentSerials)) {
+            $remaining = array_diff($availableSerials, $currentSerials);
+            shuffle($remaining);
+            $toAdd = array_slice($remaining, 0, $requestedQuantity - count($currentSerials));
+            $product->serials = array_merge($currentSerials, $toAdd);
         }
+        // Reduce serials if lowering quantity
+        elseif ($requestedQuantity < count($currentSerials)) {
+            $product->serials = array_slice($currentSerials, 0, $requestedQuantity);
+        }
+
+        // Update and store session
+        $product->quantity = $requestedQuantity;
+        $this->products[$index] = $product;
+        session()->put('cartItems', $this->products);
     }
 
     public function updateProductsList($selectedProducts)
     {
         foreach ($selectedProducts as $item) {
+            $product = Product::with('serials')->findOrFail($item['id']);
+            $availableSerials = $product->serials()
+                ->where('status', 'available')
+                ->pluck('serial_number')
+                ->toArray();
 
-            $product = Product::findOrFail($item['id']);
-
-            if ($product->availableCount() < 1) {
+            if (empty($availableSerials)) {
                 notyf()->error("{$product->name} is not available");
                 continue;
             }
 
-            $alreadyExists = false;
-
-            foreach ($this->products as $existing) {
-                if ($existing->id == $product->id) {
-                    if ($existing->quantity < $existing->stock) {
-                        $existing->quantity++;
-                        notyf()->success('Products added successfully.');
-                        session()->put('cartItems', $this->products);
-                    }
-                    $alreadyExists = true;
-                    break;
+            // Check if already exists
+            $existing = collect($this->products)->firstWhere('id', $product->id);
+            if ($existing) {
+                $remaining = array_diff($availableSerials, $existing->serials ?? []);
+                if ($remaining) {
+                    $existing->serials[] = array_shift($remaining);
+                    $existing->quantity = count($existing->serials);
+                    notyf()->success("Added another {$product->name}.");
+                } else {
+                    notyf()->error("No more stock available for {$product->name}.");
                 }
+            } else {
+                // Add new product
+                shuffle($availableSerials);
+                $this->products[] = (object) [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->retail_price,
+                    'stock' => count($availableSerials),
+                    'serials' => [array_shift($availableSerials)],
+                    'quantity' => 1,
+                ];
+                notyf()->success("{$product->name} added successfully.");
             }
-
-            if ($alreadyExists) {
-                continue;
-            }
-
-            $this->products[] = (object)[
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->retail_price,
-                'stock' => $product->availableCount(),
-                'quantity' => 1,
-            ];
-
-            notyf()->success('Products added successfully.');
         }
 
         session()->put('cartItems', $this->products);
@@ -80,18 +103,21 @@ class OrderList extends Component
         foreach ($this->products as $index => $item) {
             if ($item->id == $id) {
                 unset($this->products[$index]);
+                break;
             }
         }
+
+        $this->products = array_values($this->products);
         session()->put('cartItems', $this->products);
+        notyf()->success('Product removed.');
     }
 
     public function getTotalAmountProperty()
     {
-        $total = 0;
-        foreach ($this->products as $item) {
-            $total += $item->quantity * $item->price;
-        }
-        return $total;
+        return collect($this->products)->sum(function ($item) {
+            $quantity = isset($item->serials) ? count($item->serials) : ($item->quantity ?? 1);
+            return $quantity * $item->price;
+        });
     }
 
     public function getTotalProductProperty()

@@ -82,7 +82,7 @@
                             <p class="text-green-700 font-semibold text-sm md:text-lg">
                                 ₱{{ number_format($selectedProduct->retail_price, 2) }}</p>
                             <p class="text-[0.6rem] md:text-xs text-gray-600">Current Stock:
-                                {{ $selectedProduct->availableReservedCount() }}</p>
+                                {{ $selectedProduct->availableCount() }}</p>
                         </div>
                         <p
                             class="text-[0.6rem] md:text-xs text-gray-700 my-4 max-h-16 overflow-hidden overflow-y-auto custom-scrollbar">

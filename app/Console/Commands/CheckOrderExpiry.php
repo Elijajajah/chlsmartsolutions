@@ -31,19 +31,24 @@ class CheckOrderExpiry extends Command
     {
         $today = Carbon::today();
 
-        $expiredOrder = Order::with('orderProducts.product.inventory')->whereNotNull('expiry_date')->whereDate('expiry_date', '<', $today)->where('status', 'pending')->get();
+        // Get all pending orders that have expired
+        $expiredOrders = Order::with('productSerials')
+            ->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '<', $today)
+            ->where('status', 'pending')
+            ->get();
+
         $notifier = app(NotificationService::class);
 
-        foreach ($expiredOrder as $order) {
+        foreach ($expiredOrders as $order) {
+            // Update order status
             $order->status = 'expired';
             $order->save();
 
-            foreach ($order->orderProducts as $orderProduct) {
-                $product = $orderProduct->product;
-                $product->inventory->stock += $orderProduct->quantity;
-                $product->inventory->save();
-            }
+            // Restore all product serials under this order to "available"
+            $order->productSerials()->update(['status' => 'available']);
 
+            // Send notification
             $notifier->createNotif(
                 $order->user_id,
                 'Order Expired',
@@ -51,9 +56,9 @@ class CheckOrderExpiry extends Command
                 ['admin', 'cashier', 'admin_officer'],
             );
 
-            $this->info("Task ID {$order->id} has expired.");
+            $this->info("Order ID {$order->id} ({$order->reference_id}) has expired and serials restored.");
         }
 
-        $this->info('Checked for expired tasks.');
+        $this->info('Checked for expired orders successfully.');
     }
 }

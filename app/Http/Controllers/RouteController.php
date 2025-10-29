@@ -29,7 +29,8 @@ class RouteController
         $total = 0.0;
 
         foreach ($cartItems as $item) {
-            $total += $item->quantity * $item->price;
+            $serialCount = count($item->serials);
+            $total += $serialCount * $item->price;
         }
 
         return view('customer.checkout', [
@@ -38,6 +39,7 @@ class RouteController
             'user' => $user,
         ]);
     }
+
 
     public function goToAdminPage()
     {

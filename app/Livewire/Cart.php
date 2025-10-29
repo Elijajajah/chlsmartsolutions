@@ -12,34 +12,42 @@ class Cart extends Component
     public function addToCart($payload)
     {
         $productId = $payload['id'];
+        $product = Product::with('serials')->findOrFail($productId);
 
-        $product = Product::findOrFail($productId);
+        // 🔹 Get available serials for this product
+        $availableSerials = $product->serials()->where('status', 'available')->pluck('serial_number')->toArray();
 
+        // 🔹 Check if product already exists in cart
         foreach ($this->cartItems as $item) {
             if ($item->id == $product->id) {
-                if ($item->quantity < $item->stock) {
-                    $item->quantity++;
+                // If product already in cart, append the next available serial
+                $existingSerials = collect($item->serials);
+                $remainingSerials = array_diff($availableSerials, $existingSerials->toArray());
+
+                if (count($remainingSerials) > 0) {
+                    $item->serials[] = array_shift($remainingSerials); // add 1 serial
                     session()->put('cartItems', $this->cartItems);
-                    notyf()->success('You’ve added the product to your cart.');
-                    return;
+                    notyf()->success('Product has been added.');
                 }
                 return;
             }
         }
 
-        $this->cartItems[] = (object)[
+        // 🔹 If product not yet in cart, create a new entry with first serial
+        $this->cartItems[] = (object) [
             'id' => $product->id,
             'name' => $product->name,
             'description' => $product->description,
             'price' => $product->retail_price,
             'image_url' => $product->image_url,
-            'stock' => $product->availableReservedCount(),
-            'quantity' => 1,
+            'stock' => count($availableSerials),
+            'serials' => [array_shift($availableSerials)], // store first serial number
         ];
-        notyf()->success('You’ve added the product to your cart.');
 
         session()->put('cartItems', $this->cartItems);
+        notyf()->success('Product has been added.');
     }
+
 
     public function mount()
     {
@@ -49,21 +57,45 @@ class Cart extends Component
     public function increaseQuantity($id)
     {
         foreach ($this->cartItems as $item) {
-            if ($item->id == $id && $item->quantity < $item->stock) {
-                $item->quantity++;
+            if ($item->id == $id) {
+                $product = Product::with('serials')->findOrFail($id);
+
+                // Get available serials that aren't already in the cart
+                $availableSerials = $product->serials()
+                    ->where('status', 'available')
+                    ->pluck('serial_number')
+                    ->toArray();
+
+                $alreadyInCart = $item->serials ?? [];
+                $remainingSerials = array_diff($availableSerials, $alreadyInCart);
+
+                if (count($remainingSerials) > 0) {
+                    // Add one more serial number
+                    $item->serials[] = array_shift($remainingSerials);
+                    session()->put('cartItems', $this->cartItems);
+                }
+
+                return;
             }
         }
-        session()->put('cartItems', $this->cartItems);
     }
 
     public function decreaseQuantity($id)
     {
-        foreach ($this->cartItems as $item) {
-            if ($item->id == $id && $item->quantity > 1) {
-                $item->quantity--;
+        foreach ($this->cartItems as $key => $item) {
+            if ($item->id == $id) {
+                if (isset($item->serials) && count($item->serials) > 1) {
+                    // Remove the last added serial number
+                    array_pop($item->serials);
+                    session()->put('cartItems', $this->cartItems);
+                } else {
+                    // If only one left, remove entire product
+                    unset($this->cartItems[$key]);
+                    session()->put('cartItems', array_values($this->cartItems));
+                }
+                return;
             }
         }
-        session()->put('cartItems', $this->cartItems);
     }
 
     public function removeItem($id)
@@ -71,10 +103,16 @@ class Cart extends Component
         foreach ($this->cartItems as $index => $item) {
             if ($item->id == $id) {
                 unset($this->cartItems[$index]);
+                break;
             }
         }
+
+        $this->cartItems = array_values($this->cartItems);
+
         session()->put('cartItems', $this->cartItems);
+        notyf()->success('Product removed from cart.');
     }
+
 
     public function getTotalItemsProperty()
     {
@@ -85,21 +123,26 @@ class Cart extends Component
     {
         foreach ($this->cartItems as $item) {
             if ($item->id == $id) {
-                return $item->quantity * $item->price;
+                $serialCount = isset($item->serials) ? count($item->serials) : 0;
+                return $serialCount * $item->price;
             }
         }
 
         return 0;
     }
 
+
     public function getTotalAmountProperty()
     {
         $total = 0;
         foreach ($this->cartItems as $item) {
-            $total += $item->quantity * $item->price;
+            $serialCount = isset($item->serials) ? count($item->serials) : 0;
+            $total += $serialCount * $item->price;
         }
+
         return $total;
     }
+
 
     public function render()
     {

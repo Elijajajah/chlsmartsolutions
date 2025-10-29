@@ -100,7 +100,7 @@
                 </div>
                 <div class="relative text-[#797979]">
                     <select wire:change="$set('selectedCategory', $event.target.value)"
-                        class="w-[200px] md:w-[280px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
+                        class="w-[200px] md:w-[260px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
                         name="category" id="category">
                         <option value="0">All Category</option>
                         @foreach ($categories as $cat)
@@ -133,36 +133,35 @@
         <div class="w-full overflow-x-auto">
             <div class="min-w-[1024px] flex flex-col font-inter">
                 <div class="flex items-center bg-[#F9FAFB] text-sm text-[#878787] p-4 border-y border-[#E5E7EB]">
-                    <div class="w-[15%]">CUSTOMER TYPE</div>
-                    <div class="w-[22%]">PRODUCT NAME</div>
-                    <div class="w-[18%] text-center">CATEGORY</div>
+                    <div class="w-[20%]">CUSTOMER TYPE</div>
+                    <div class="w-[25%]">PRODUCT NAME</div>
+                    <div class="w-[20%] text-center">CATEGORY</div>
                     <div class="w-[10%] text-center">QUANTITY</div>
                     <div class="w-[20%] text-center">AMOUNT</div>
                 </div>
                 @forelse ($products as $product)
                     @php
-                        $type = 'N\A';
+                        $type = 'N/A';
                         $quantity = 0;
                         $total = 0;
 
-                        $grouped = $product->orderProducts
-                            ->groupBy(function ($orderProduct) {
-                                return $orderProduct->order->type;
-                            })
-                            ->map(function ($group) {
-                                return $group->sum('quantity');
-                            })
-                            ->sortDesc();
+                        // Collect all orders linked to this product through its serials
+                        $orders = $product->serials
+                            ->flatMap(fn($serial) => $serial->orders) // merge all orders from all serials
+                            ->where('status', 'completed'); // only completed orders
+
+                        // Group by order type and count how many serials belong to each type
+                        $grouped = $orders->groupBy('type')->map(fn($group) => $group->count())->sortDesc();
 
                         if ($grouped->isNotEmpty()) {
                             $type = $grouped->keys()->first();
                             $quantity = $grouped->first();
-                            $total = $quantity * $product->price;
+                            $total = $quantity * $product->retail_price;
                         }
                     @endphp
 
                     <div class="flex items-center text-sm text-[#484848] p-4 border-b border-[#E5E7EB]">
-                        <div class="w-[15%] flex items-center justify-start">
+                        <div class="w-[20%] flex items-center justify-start">
                             @if ($type == 'online')
                                 <div class="bg-[#3B82F6] text-white py-2 px-4 rounded-md text-xs">Online</div>
                             @elseif ($type == 'walk_in')
@@ -175,8 +174,8 @@
                                 <div class="bg-[#b8b8b8] text-white py-2 px-4 rounded-md text-xs">N/A</div>
                             @endif
                         </div>
-                        <div class="w-[22%] capitalize">{{ $product->name }}</div>
-                        <div class="w-[18%] text-center capitalize">{{ $product->category->name }}</div>
+                        <div class="w-[25%] capitalize">{{ $product->name }}</div>
+                        <div class="w-[20%] truncate text-center capitalize">{{ $product->category->name }}</div>
                         <div class="w-[10%] text-center">x{{ $quantity }}</div>
                         <div class="w-[20%] text-center font-semibold text-black">
                             ₱{{ number_format($total, 2) }}</div>

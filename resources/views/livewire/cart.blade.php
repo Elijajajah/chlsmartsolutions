@@ -87,7 +87,7 @@
                                             </svg>
                                         </button>
                                         <div class="w-10 h-8 flex items-center justify-center text-sm font-bold">
-                                            {{ $item->quantity }}
+                                            {{ isset($item->serials) ? count($item->serials) : 0 }}
                                         </div>
                                         <button
                                             class="cursor-pointer w-10 h-8 flex items-center justify-center hover:bg-gray-100"
@@ -160,7 +160,8 @@
                                     d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
                         </button>
-                        <p class="text-sm line-clamp-1 text-center w-4">{{ $item->quantity }}</p>
+                        <p class="text-sm line-clamp-1 text-center w-4">
+                            {{ isset($item->serials) ? count($item->serials) : 0 }}</p>
                         <button wire:click='increaseQuantity({{ $item->id }})'>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="size-5">

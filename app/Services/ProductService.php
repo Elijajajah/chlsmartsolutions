@@ -25,20 +25,18 @@ class ProductService
     {
         return Product::with([
             'category',
-            'orderProducts' => function ($query) use ($type) {
-                $query->whereHas('order', function ($q) use ($type) {
-                    $q->where('status', 'completed');
-
-                    if ($type !== 'all') {
-                        $q->where('type', $type);
-                    }
-                });
-            },
-            'orderProducts.order'
-        ])
-            ->whereHas('orderProducts.order', function ($query) use ($type, $date) {
+            'serials.orders' => function ($query) use ($type, $date) {
                 $query->where('status', 'completed')
-                    ->whereBetween('updated_at', [$date, now()]);
+                    ->whereBetween('orders.updated_at', [$date, now()]);
+
+                if ($type !== 'all') {
+                    $query->where('type', $type);
+                }
+            }
+        ])
+            ->whereHas('serials.orders', function ($query) use ($type, $date) {
+                $query->where('status', 'completed')
+                    ->whereBetween('orders.updated_at', [$date, now()]);
 
                 if ($type !== 'all') {
                     $query->where('type', $type);
@@ -50,31 +48,39 @@ class ProductService
             ->when($search !== '', function ($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })
-            ->orderBy('created_at', 'asc')
+            ->orderBy('products.created_at', 'asc')
             ->paginate(8);
     }
 
     public function getTopSellingProduct()
     {
-        $products = Product::with(['serials', 'orderProducts.order', 'category'])->get();
+        // Load products with serials and their related completed orders
+        $products = Product::with([
+            'serials.orders' => function ($query) {
+                $query->where('status', 'completed');
+            },
+            'category'
+        ])->get();
 
-        // Get highest sales count
-        $maxSold = $products->map(function ($product) {
-            return $product->orderProducts
-                ->where('order.status', 'completed')
-                ->sum('quantity');
-        })->max();
+        // Calculate total sales per product (based on completed orders)
+        $products = $products->map(function ($product) {
+            // Count how many serials of this product are tied to completed orders
+            $soldCount = $product->serials->reduce(function ($carry, $serial) {
+                return $carry + $serial->orders->count();
+            }, 0);
 
-        // Compute and rank
+            $product->sold_count = $soldCount;
+            return $product;
+        });
+
+        // Get the highest sold count
+        $maxSold = $products->max('sold_count');
+
+        // Compute and rank products by sales score
         return $products->map(function ($product) use ($maxSold) {
-            $soldQuantity = $product->orderProducts
-                ->where('order.status', 'completed')
-                ->sum('quantity');
-
             $product->sales_score = $maxSold > 0
-                ? round(($soldQuantity / $maxSold) * 100, 2)
+                ? round(($product->sold_count / $maxSold) * 100, 2)
                 : 0;
-
             return $product;
         })
             ->filter(fn($p) => $p->sales_score > 0)
@@ -82,10 +88,9 @@ class ProductService
             ->values();
     }
 
-
     public function getProductWithStock($category_id = 0, $search = '')
     {
-        return Product::with(['serials', 'orderProducts.order', 'category'])
+        return Product::with(['serials.orders', 'category'])
             ->when($category_id != 0, function ($query) use ($category_id) {
                 $query->where('category_id', $category_id);
             })
@@ -95,8 +100,10 @@ class ProductService
             ->orderByDesc('created_at')
             ->paginate(10)
             ->through(function ($product) {
+                // Count all serials that are either 'available' or 'reserved'
                 $availableStock = $product->availableReservedCount();
 
+                // Add adjusted stock property for easy access
                 $product->adjusted_stock = $availableStock;
 
                 return $product;

@@ -1,5 +1,6 @@
 @php
-    $order = \App\Models\Order::with('orderProducts.product')->find(session('orderId'));
+    $orderId = session('orderId');
+    $order = $orderId ? \App\Models\Order::with('productSerials.product')->find($orderId) : null;
 @endphp
 
 <div>
@@ -41,14 +42,27 @@
                     </div>
                     <div id="receipt-scroll"
                         class="flex flex-col items-center max-h-[100px] overflow-hidden overflow-y-auto custom-scrollbar">
-                        @foreach ($order->orderProducts as $item)
-                            <div class="flex items-center w-full">
-                                <div class="w-[50%] line-clamp-1">{{ ucwords($item->product->name) }}</div>
-                                <div class="w-[15%] text-center">x{{ $item->quantity }}</div>
-                                <div class="w-[35%] text-center">
-                                    ₱{{ number_format($item->quantity * $item->product->retail_price, 2) }}</div>
-                            </div>
-                        @endforeach
+                        @if ($order && $order->productSerials->isNotEmpty())
+                            @php
+                                $groupedProducts = $order->productSerials->groupBy('product_id');
+                            @endphp
+
+                            @foreach ($groupedProducts as $productId => $serials)
+                                @php
+                                    $product = $serials->first()->product;
+                                    $quantity = $serials->count();
+                                    $total = $quantity * $product->retail_price;
+                                @endphp
+
+                                <div class="flex items-center w-full">
+                                    <div class="w-[50%] line-clamp-1">{{ ucwords($product->name) }}</div>
+                                    <div class="w-[15%] text-center">x{{ $quantity }}</div>
+                                    <div class="w-[35%] text-center">
+                                        ₱{{ number_format($total, 2) }}
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
 
                     </div>
                     <hr class="w-full h-px border-[#BBBBBB] mt-4">

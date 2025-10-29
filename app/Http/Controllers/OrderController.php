@@ -4,11 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Inventory;
-use App\Models\OrderProduct;
 use Illuminate\Http\Request;
 use App\Models\ProductSerial;
-use App\Models\OrderInventory;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Validator;
@@ -54,13 +51,13 @@ class OrderController
         }
 
         foreach ($cartItems as $item) {
-            $product = Product::where('id', $item->id)->first();
-            if ($product->availableReservedCount() < $item->quantity) {
-                $cartItems = array_filter($cartItems, function ($item) {
-                    return $item->id !== $item->id;
-                });
-                session()->put('cartItems', $cartItems);
-                notyf()->error("{$item->name} out of stock");
+            $product = Product::find($item->id);
+            $availableSerialsCount = ProductSerial::where('product_id', $product->id)
+                ->where('status', 'available')
+                ->count();
+
+            if ($availableSerialsCount < count($item->serials)) {
+                notyf()->error("{$item->name} is out of stock.");
                 return redirect()->route('landing.page');
             }
         }
@@ -82,21 +79,18 @@ class OrderController
         ]);
 
         foreach ($cartItems as $item) {
-            OrderProduct::create([
-                'order_id' => $order->id,
-                'product_id' => $item->id,
-                'quantity' => $item->quantity,
-            ]);
-        }
+            $serialNumbers = is_array($item->serials) ? $item->serials : [];
 
-        foreach ($cartItems as $item) {
-            $availableSerials = ProductSerial::where('product_id', $item->id)
-                ->where('status', 'available')
-                ->inRandomOrder()
-                ->take($item->quantity)
+            // Get serials from DB by serial number
+            $serials = ProductSerial::whereIn('serial_number', $serialNumbers)
+                ->where('product_id', $item->id)
                 ->get();
 
-            ProductSerial::whereIn('id', $availableSerials->pluck('id'))
+            // Attach to order
+            $order->productSerials()->attach($serials->pluck('id')->toArray());
+
+            // Mark serials as reserved
+            ProductSerial::whereIn('id', $serials->pluck('id'))
                 ->update(['status' => 'reserved']);
         }
 

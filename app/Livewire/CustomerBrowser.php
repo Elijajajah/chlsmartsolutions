@@ -20,7 +20,6 @@ class CustomerBrowser extends Component
     public $showModal = false;
     public $selectedProduct = null;
 
-
     public function updated($property)
     {
         if ($property === 'selectedCategory' || $property === 'search') {
@@ -46,7 +45,7 @@ class CustomerBrowser extends Component
 
     public function addToCart()
     {
-        if ($this->selectedProduct->availableReservedCount() < 1) {
+        if ($this->selectedProduct->availableCount() < 1) {
             notyf()->error('Product is not yet available');
             $this->closeModal();
             return;

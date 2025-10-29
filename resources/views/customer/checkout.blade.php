@@ -58,10 +58,10 @@
                                 </div>
                                 <div
                                     class="w-[22%] md:w-[22.5%] text-center font-inter font-semibold text-sm md:text-base">
-                                    x{{ $item->quantity }}
+                                    x{{ isset($item->serials) ? count($item->serials) : 0 }}
                                 </div>
                                 <div class="hidden md:block md:w-[22.5%] text-center font-inter font-semibold">
-                                    ₱{{ number_format($item->quantity * $item->price, 2) }}
+                                    ₱{{ number_format(isset($item->serials) ? count($item->serials) : 0 * $item->price, 2) }}
                                 </div>
                             </div>
                         @endforeach

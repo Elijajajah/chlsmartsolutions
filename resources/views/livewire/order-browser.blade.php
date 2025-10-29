@@ -292,7 +292,7 @@
                             </div>
                         </div>
                         <div class="flex flex-col gap-2 w-full">
-                            <h1 class="font-medium">Order items({{ count($selectedOrder->orderProducts) }})</h1>
+                            <h1 class="font-medium">Order items({{ count($selectedOrder->productSerials) }})</h1>
                             <div class="flex items-center text-center text-xs text-[#747474]">
                                 <div class="w-[50%]">ITEMS</div>
                                 <div class="w-[15%]">QTY</div>
@@ -300,12 +300,22 @@
                             </div>
                             <div
                                 class="flex flex-col items-center max-h-[150px] overflow-hidden overflow-y-auto custom-scrollbar">
-                                @foreach ($selectedOrder->orderProducts as $order)
+                                @php
+                                    $groupedSerials = $selectedOrder->productSerials->groupBy('product_id');
+                                @endphp
+                                @foreach ($groupedSerials as $productId => $serialGroup)
+                                    @php
+                                        $product = $serialGroup->first()->product;
+                                        $quantity = $serialGroup->count();
+                                        $totalPrice = $product->retail_price * $quantity;
+                                    @endphp
+
                                     <div class="flex items-center w-full">
-                                        <div class="w-[50%]">{{ $order->product->name }}</div>
-                                        <div class="w-[15%] text-center">x{{ $order->quantity }}</div>
+                                        <div class="w-[50%]">{{ $product->name }}</div>
+                                        <div class="w-[15%] text-center">x{{ $quantity }}</div>
                                         <div class="w-[35%] text-center">
-                                            ₱{{ number_format($order->product->price * $order->quantity, 2) }}</div>
+                                            ₱{{ number_format($totalPrice, 2) }}
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
@@ -316,8 +326,6 @@
                                 </p>
                             </div>
                         </div>
-
-
 
                         <div class="flex items-center justify-center w-full gap-4 mt-6">
                             <button wire:click='updateStatus({{ $selectedOrder->id }})'

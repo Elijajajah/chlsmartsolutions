@@ -12,4 +12,10 @@ class ProductSerial extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'order_product_serial')
+            ->withTimestamps();
+    }
 }

@@ -23,7 +23,7 @@ class OrderBrowser extends Component
     public function selectOrder($order_id)
     {
         $this->showModal = true;
-        $this->selectedOrder = Order::with('orderProducts.product')->find($order_id);
+        $this->selectedOrder = Order::with('productSerials.product')->find($order_id);
     }
 
     public function closeModal()
@@ -55,29 +55,34 @@ class OrderBrowser extends Component
 
     public function updateStatus($id)
     {
-        $order = Order::find($id);
-        if ($order->status == 'pending') {
-            $order->status = 'completed';
-            $order->updated_at = now();
-            $order->save();
+        $order = Order::with('productSerials')->find($id);
 
-            app(NotificationService::class)->createNotif(
-                Auth::user()->id,
-                'Order Completed',
-                "{$order->reference_id} placed by {$order->user->fullname} has been successfully completed.",
-                ['admin', 'cashier', 'admin_officer'],
-            );
-
-            notyf()->success('Order has been completed.');
-            $this->dispatch('notificationRead')->to('sidebar');
-            $this->closeModal();
-            return;
-        } elseif ($order->status == 'completed') {
-            notyf()->error('Order already been completed.');
+        if ($order->status === 'completed') {
+            notyf()->error('Order has already been completed.');
             return;
         }
 
-        notyf()->error('Order has expired.');
+        if ($order->status !== 'pending') {
+            notyf()->error('Order has expired.');
+            return;
+        }
+
+        $order->status = 'completed';
+        $order->updated_at = now();
+        $order->save();
+
+        $order->productSerials()->update(['status' => 'sold']);
+
+        app(NotificationService::class)->createNotif(
+            Auth::user()->id,
+            'Order Completed',
+            "{$order->reference_id} placed by {$order->user->fullname} has been successfully completed.",
+            ['admin', 'cashier', 'admin_officer'],
+        );
+
+        notyf()->success('Order has been completed.');
+        $this->dispatch('notificationRead')->to('sidebar');
+        $this->closeModal();
     }
 
     public function goToCheckout()
