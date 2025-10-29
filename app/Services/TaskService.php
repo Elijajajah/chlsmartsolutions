@@ -26,7 +26,7 @@ class TaskService
         return Task::with('user', 'service.serviceCategory')
             ->when($status && $status !== 'all', fn($query) => $query->where('status', $status))
             ->when($prio && $prio !== 'all', fn($query) => $query->where('priority', $prio))
-            ->orderBy('expiry_date', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate(9);
     }
 

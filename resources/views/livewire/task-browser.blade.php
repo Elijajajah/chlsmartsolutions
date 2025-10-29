@@ -89,6 +89,8 @@
                             <option value="pending">Pending</option>
                             <option value="completed">Completed</option>
                             <option value="missed">Missed</option>
+                            <option value="unassigned">Unassigned</option>
+                            <option value="overdue">Overdue</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -116,7 +118,7 @@
                 </div>
 
                 <div class="flex items-center justify-between gap-4 md:gap-6">
-                    <button wire:click="$set('activeTab', 'addTask')"
+                    <button wire:click="$set('showAddTask', true)"
                         class="flex-1 cursor-pointer px-4 py-2 bg-[#203D3F] rounded-md flex items-center text-white gap-2 whitespace-nowrap">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -170,7 +172,8 @@
                                 </div>
                                 <div
                                     class="w-[15%] text-center px-1 border-x border-[#EEF2F5] py-3.5 md:py-5.5 flex items-center gap-2">
-                                    <p class="w-full truncate capitalize">{{ $task->user->fullname }}</p>
+                                    <p class="w-full truncate capitalize">{{ $task->user->fullname ?? '-----' }}
+                                    </p>
                                 </div>
                                 <div
                                     class="w-[10%] text-center px-1 border-x border-[#EEF2F5] py-3.5 md:py-5.5 flex items-center gap-2">
@@ -181,7 +184,8 @@
                                     <p class="w-full truncate capitalize">{{ $task->status }}</p>
                                 </div>
                                 <div class="w-[10%] pr-4 py-3 flex items-center justify-center gap-2 text-xs">
-                                    <button class="text-[#3B82F6] px-4 py-2 rounded cursor-pointer">
+                                    <button wire:click='editTask({{ $task->id }})'
+                                        class="text-[#3B82F6] px-4 py-2 rounded cursor-pointer">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -247,23 +251,319 @@
         </div>
     @endif
 
-    @if ($activeTab == 'addTask')
-        <div class="flex flex-col rounded-md gap-6 bg-white font-poppins p-6 w-full">
-            <div class="flex items-center mb-2 gap-4">
-                <button wire:click="$set('activeTab', 'taskBrowse')" class="cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" class="lucide lucide-undo2-icon lucide-undo-2">
-                        <path d="M9 14 4 9l5-5" />
-                        <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
-                    </svg>
-                </button>
-                <h1 class="text-lg font-semibold">Create a New Task</h1>
+    @if ($showAddTask)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
+            <div
+                class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg gap-2 md:gap-4 w-full p-6 md:p-8 relative font-poppins flex flex-col justify-center">
+                <h1 class="text-[#203D3F] md:text-lg font-semibold">Add New Service</h1>
+
+                <div class="flex flex-col gap-2">
+                    <!-- Category -->
+                    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                        <p class="text-xs md:text-sm font-medium">Category</p>
+                        <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
+                            <select wire:model.live="newAddCategory"
+                                class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
+                                <option value="all">Category</option>
+                                @foreach ($allserviceCategories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->category }}</option>
+                                @endforeach
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service -->
+                    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                        <p class="text-xs md:text-sm font-medium">Services</p>
+                        <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
+                            <select wire:model.live="newAddService"
+                                class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
+                                <option value="all">Services</option>
+                                @foreach ($filteredServices as $service)
+                                    <option value="{{ $service->id }}">{{ $service->service }}</option>
+                                @endforeach
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technician -->
+                    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                        <p class="text-xs md:text-sm font-medium">Technicians</p>
+                        <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
+                            <select wire:model.live="newAddTechnician"
+                                class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
+                                <option value="" disabled>Select a Technician</option>
+                                @foreach ($technicians as $technician)
+                                    <option value="{{ $technician->id }}">{{ $technician->fullname }}</option>
+                                @endforeach
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Priority & Preferred Date -->
+                    <div class="flex flex-col md:flex-row md:gap-4">
+                        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                            <p class="text-xs md:text-sm font-medium">Priority</p>
+                            <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
+                                <select wire:model.live="newAddPriority"
+                                    class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
+                                    <option value="" disabled>Priority</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Due Date (Matched Style) -->
+                        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1 relative">
+                            <p class="text-xs md:text-sm font-medium">Due Date</p>
+                            <input type="date" id="date" wire:model.live="newAddDue"
+                                class="hide-calendar text-sm md:text-base w-full pl-4 pr-10 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                            <svg onclick="document.getElementById('date').showPicker()"
+                                class="absolute top-[30px] md:top-[36px] right-4 cursor-pointer text-gray-500 hover:text-gray-800"
+                                xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M8 2v4" />
+                                <path d="M16 2v4" />
+                                <rect width="18" height="18" x="3" y="4" rx="2" />
+                                <path d="M3 10h18" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Full Name & Phone -->
+                    <div class="flex flex-col md:flex-row md:gap-4">
+                        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                            <p class="text-xs md:text-sm font-medium">Full Name</p>
+                            <input type="text" placeholder="John Doe" wire:model.live="newAddFullName"
+                                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                        </div>
+                        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                            <p class="text-xs md:text-sm font-medium">Phone number</p>
+                            <div class="relative">
+                                <div
+                                    class="absolute top-2.5 left-4 flex items-center justify-center gap-2 text-[#797979]">
+                                    <p class="text-sm md:text-base">+63</p>
+                                    <div class="w-px bg-gray-400 h-5"></div>
+                                </div>
+                                <input type="text" maxlength="10" inputmode="numeric" placeholder="9xxxxxxxxx"
+                                    wire:model.live="newAddPhoneNumber"
+                                    class="text-sm md:text-base w-full pl-18 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Additional Details (Matched Style) -->
+                    <div class="flex flex-col text-[#4f4f4f] gap-1">
+                        <p class="text-xs md:text-sm font-medium">Additional details</p>
+                        <textarea rows="4" placeholder="Enter your comments or details..." wire:model.live="newAddDescription"
+                            class="text-sm md:text-base w-full px-4 py-2 border border-gray-500 rounded-md resize-none focus:outline-none text-[#797979]"></textarea>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex flex-col md:flex-row items-center gap-2 md:gap-2">
+                    <button type="button" wire:click="closeAddTask"
+                        class="w-full flex-1 py-2 border border-[#4f4f4f] rounded-md text-xs md:text-sm cursor-pointer">
+                        Cancel
+                    </button>
+                    <button wire:click="createTask"
+                        class="w-full flex-1 py-2 bg-[#203D3F] rounded-md text-xs md:text-sm text-white cursor-pointer">
+                        Create Service
+                    </button>
+                </div>
             </div>
-            <livewire:task-form />
         </div>
     @endif
 
+    @if ($showEditTask)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
+            <div
+                class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg gap-2 md:gap-4 w-full p-6 md:p-8 relative font-poppins flex flex-col justify-center">
+                <h1 class="text-[#203D3F] md:text-lg font-semibold">Add New Service</h1>
+
+                <div class="flex flex-col gap-2">
+                    <!-- Category -->
+                    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                        <p class="text-xs md:text-sm font-medium">Category</p>
+                        <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
+                            <select wire:model.live="newEditCategory"
+                                class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
+                                <option value="all">Category</option>
+                                @foreach ($allserviceCategories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->category }}</option>
+                                @endforeach
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service -->
+                    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                        <p class="text-xs md:text-sm font-medium">Services</p>
+                        <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
+                            <select wire:model.live="newEditService"
+                                class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
+                                <option value="all">Services</option>
+                                @foreach ($filteredServices as $service)
+                                    <option value="{{ $service->id }}">{{ $service->service }}</option>
+                                @endforeach
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technician -->
+                    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                        <p class="text-xs md:text-sm font-medium">Technicians</p>
+                        <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
+                            <select wire:model.live="newEditTechnician"
+                                class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
+                                <option value="" disabled>Select a Technician</option>
+                                @foreach ($technicians as $technician)
+                                    <option value="{{ $technician->id }}">{{ $technician->fullname }}</option>
+                                @endforeach
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Priority & Preferred Date -->
+                    <div class="flex flex-col md:flex-row md:gap-4">
+                        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                            <p class="text-xs md:text-sm font-medium">Priority</p>
+                            <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
+                                <select wire:model.live="newEditPriority"
+                                    class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
+                                    <option value="" disabled>Priority</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Due Date (Matched Style) -->
+                        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1 relative">
+                            <p class="text-xs md:text-sm font-medium">Due Date</p>
+                            <input type="date" id="date" wire:model.live="newEditDue"
+                                class="hide-calendar text-sm md:text-base w-full pl-4 pr-10 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                            <svg onclick="document.getElementById('date').showPicker()"
+                                class="absolute top-[30px] md:top-[36px] right-4 cursor-pointer text-gray-500 hover:text-gray-800"
+                                xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M8 2v4" />
+                                <path d="M16 2v4" />
+                                <rect width="18" height="18" x="3" y="4" rx="2" />
+                                <path d="M3 10h18" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Full Name & Phone -->
+                    <div class="flex flex-col md:flex-row md:gap-4">
+                        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                            <p class="text-xs md:text-sm font-medium">Full Name</p>
+                            <input type="text" placeholder="John Doe" wire:model.live="newEditFullName"
+                                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                        </div>
+                        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+                            <p class="text-xs md:text-sm font-medium">Phone number</p>
+                            <div class="relative">
+                                <div
+                                    class="absolute top-2.5 left-4 flex items-center justify-center gap-2 text-[#797979]">
+                                    <p class="text-sm md:text-base">+63</p>
+                                    <div class="w-px bg-gray-400 h-5"></div>
+                                </div>
+                                <input type="text" maxlength="10" inputmode="numeric" placeholder="9xxxxxxxxx"
+                                    wire:model.live="newEditPhoneNumber"
+                                    class="text-sm md:text-base w-full pl-18 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Additional Details (Matched Style) -->
+                    <div class="flex flex-col text-[#4f4f4f] gap-1">
+                        <p class="text-xs md:text-sm font-medium">Additional details</p>
+                        <textarea rows="4" placeholder="Enter your comments or details..." wire:model.live="newEditDescription"
+                            class="text-sm md:text-base w-full px-4 py-2 border border-gray-500 rounded-md resize-none focus:outline-none text-[#797979]"></textarea>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex flex-col md:flex-row items-center gap-2 md:gap-2">
+                    <button type="button" wire:click="closeEditTask"
+                        class="w-full flex-1 py-2 border border-[#4f4f4f] rounded-md text-xs md:text-sm cursor-pointer">
+                        Cancel
+                    </button>
+                    <button wire:click="saveEditTask"
+                        class="w-full flex-1 py-2 bg-[#203D3F] rounded-md text-xs md:text-sm text-white cursor-pointer">
+                        Update Task
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Service --}}
     @if ($activeTab == 'serviceBrowse')
         <div class="flex flex-col gap-4 bg-white rounded-2xl p-4 font-poppins">
             <h1 class="text-[#203D3F] text-lg font-semibold">Service List</h1>

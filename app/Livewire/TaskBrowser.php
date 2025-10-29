@@ -10,6 +10,7 @@ use Livewire\WithPagination;
 use App\Services\TaskService;
 use App\Services\UserService;
 use App\Models\ServiceCategory;
+use App\Models\User;
 use Livewire\WithoutUrlPagination;
 use App\Services\NotificationService;
 use Illuminate\Validation\ValidationException;
@@ -21,20 +22,13 @@ class TaskBrowser extends Component
     public $selectedPrio = 'all';
     public $searchCat = '';
     public $selectedCategory = 'all';
-    public $catName = '';
-    public $newCatName = '';
-    public $catEditingId = null;
-    public $searchService = '';
-    public $showAddModal = false;
-    public $showEditModal = false;
-    public $newServiceName = '';
-    public $newCategory = '';
-    public $newAmount = 0.00;
-    public $editServiceId = null;
-    public $editServiceName = '';
-    public $editServiceCategory = '';
-    public $editAmount = 0;
-    public string $activeTab = 'serviceBrowse';
+    public $filteredServices = [];
+    public $showAddTask = false, $newAddTechnician = '', $newAddCategory = '', $newAddService = '', $newAddPriority = '', $newAddDue = '', $newAddFullName = '', $newAddPhoneNumber = '', $newAddDescription = '';
+    public $showEditTask = false, $editTaskId = null, $newEditTechnician = '', $newEditCategory = '', $newEditService = '', $newEditPriority = '', $newEditDue = '', $newEditFullName = '', $newEditPhoneNumber = '', $newEditDescription = '';
+    public $catName = '', $newCatName = '', $catEditingId = null;
+    public $searchService = '', $showAddModal = false, $newServiceName = '', $newCategory = '', $newAmount = 0.00;
+    public $showEditModal = false, $editServiceId = null, $editServiceName = '', $editServiceCategory = '', $editAmount = 0;
+    public string $activeTab = 'taskBrowse';
 
     // public function updatePriority($task_id, $priority)
     // {
@@ -82,6 +76,150 @@ class TaskBrowser extends Component
     //         notyf()->success('Assigned successfully');
     //     }
     // }
+
+    public function closeAddTask()
+    {
+        $this->reset(['newAddTechnician', 'filteredServices', 'newAddCategory', 'newAddService', 'newAddPriority', 'newAddDue', 'newAddFullName', 'newAddPhoneNumber', 'newAddDescription']);
+        $this->showAddTask = false;
+    }
+
+    public function closeEditTask()
+    {
+        $this->reset('filteredServices');
+        $this->showEditTask = false;
+    }
+
+    public function editTask($id)
+    {
+        $task = Task::find($id);
+        $this->editTaskId = $id;
+        $this->newEditTechnician = $task->user_id ?? '';
+        $this->newEditCategory = optional($task->service)->service_category_id;
+        $this->updatedNewEditCategory($this->newEditCategory);
+        $this->newEditService = $task->service_id;
+        $this->newEditPriority = $task->priority;
+        $this->newEditDue = $task->expiry_date ?? '';
+        $this->newEditFullName = $task->customer_name;
+        $this->newEditPhoneNumber = $task->customer_phone;
+        $this->newEditDescription = $task->description;
+        $this->showEditTask = true;
+    }
+
+    public function saveEditTask()
+    {
+        try {
+            $this->validate([
+                'newEditTechnician' => 'required|exists:users,id',
+                'newEditCategory' => 'required|exists:service_categories,id',
+                'newEditService' => 'required|exists:services,id',
+                'newEditPriority' => 'required|in:low,medium,high',
+                'newEditDue' => 'required|date|after_or_equal:today',
+                'newEditFullName' => 'required|string|max:255',
+                'newEditPhoneNumber' => 'required|regex:/^9[0-9]{9}$/',
+                'newEditDescription' => 'nullable|string',
+            ], [
+                'newEditTechnician.required' => 'Please select a technician.',
+                'newEditTechnician.exists' => 'The selected technician is invalid or does not exist.',
+                'newEditCategory.required' => 'Please select a service category.',
+                'newEditCategory.exists' => 'The selected category is invalid.',
+                'newEditService.required' => 'Please select a service.',
+                'newEditService.exists' => 'The selected service is invalid.',
+                'newEditPriority.required' => 'Please select a priority level.',
+                'newEditPriority.in' => 'The selected priority is invalid.',
+                'newEditDue.required' => 'Please set a due date.',
+                'newEditDue.after_or_equal' => 'The due date cannot be earlier than today.',
+                'newEditFullName.required' => 'Customer full name is required.',
+                'newEditPhoneNumber.required' => 'Customer phone number is required.',
+                'newEditPhoneNumber.regex' => 'Customer phone must start with 9 and contain exactly 10 digits (e.g., 9123456789).',
+            ]);
+        } catch (ValidationException $e) {
+            $message = $e->validator->errors()->first();
+            notyf()->error($message);
+            return;
+        }
+
+        $task = Task::find($this->editTaskId);
+
+        if (!$task) {
+            notyf()->error('Task not found.');
+            return;
+        }
+
+        $task->update([
+            'user_id' => $this->newEditTechnician,
+            'service_id' => $this->newEditService,
+            'priority' => $this->newEditPriority,
+            'expiry_date' => $this->newEditDue,
+            'customer_name' => $this->newEditFullName,
+            'customer_phone' => $this->newEditPhoneNumber,
+            'description' => $this->newEditDescription,
+        ]);
+
+        notyf()->success('Task updated successfully.');
+        $this->closeEditTask();
+    }
+
+
+    public function createTask()
+    {
+        try {
+            $this->validate([
+                'newAddTechnician' => 'nullable|exists:users,id',
+                'newAddCategory' => 'required|exists:service_categories,id',
+                'newAddService' => 'required|exists:services,id',
+                'newAddPriority' => 'required|in:low,medium,high',
+                'newAddDue' => 'required|date|after_or_equal:today',
+                'newAddFullName' => 'required|string|max:255',
+                'newAddPhoneNumber' => 'required|regex:/^9[0-9]{9}$/',
+                'newAddDescription' => 'nullable|string',
+            ], [
+                'newAddTechnician.exists' => 'The selected technician is invalid or does not exist.',
+                'newAddCategory.required' => 'Please select a service category.',
+                'newAddCategory.exists' => 'The selected category is invalid.',
+                'newAddService.required' => 'Please select a service.',
+                'newAddService.exists' => 'The selected service is invalid.',
+                'newAddPriority.required' => 'Please select a priority level.',
+                'newAddPriority.in' => 'The selected priority is invalid.',
+                'newAddDue.required' => 'Please set a due date.',
+                'newAddDue.after_or_equal' => 'The due date cannot be earlier than today.',
+                'newAddFullName.required' => 'Customer full name is required.',
+                'newAddPhoneNumber.required' => 'Customer phone number is required.',
+                'newAddPhoneNumber.regex' => 'Customer phone must start with 9 and contain exactly 10 digits (e.g., 9123456789).',
+            ]);
+        } catch (ValidationException $e) {
+            $message = $e->validator->errors()->first();
+            notyf()->error($message);
+            return;
+        }
+
+        // Determine task status
+        $status = $this->newAddTechnician ? 'pending' : 'unassigned';
+
+        // Create task
+        $task = Task::create([
+            'service_id' => $this->newAddService,
+            'priority' => $this->newAddPriority,
+            'description' => $this->newAddDescription,
+            'customer_name' => $this->newAddFullName,
+            'customer_phone' => $this->newAddPhoneNumber,
+            'user_id' => $this->newAddTechnician ?: null,
+            'status' => $status,
+            'expiry_date' => $this->newAddDue,
+        ]);
+
+        // Create technician notification (if assigned)
+        if ($this->newAddTechnician) {
+            app(NotificationService::class)->createNotif(
+                $task->user_id,
+                "New Task Assigned",
+                'A new task for "' . Str::title(optional($task->service)->service ?? 'Unknown Service') . '" has been assigned to you. Please check your task list for details.',
+                ['technician'],
+            );
+        }
+
+        notyf()->success('Task created successfully.');
+        $this->closeAddTask();
+    }
 
     public function createCategory()
     {
@@ -208,6 +346,33 @@ class TaskBrowser extends Component
         notyf()->success('Service deleted successfully.');
     }
 
+    public function mount()
+    {
+        $this->filteredServices = collect();
+    }
+
+    public function updatedNewAddCategory($categoryId)
+    {
+        if (!empty($categoryId)) {
+            $this->filteredServices = Service::where('service_category_id', $categoryId)->get();
+        } else {
+            $this->filteredServices = collect(); // reset
+        }
+
+        $this->newAddService = '';
+    }
+
+    public function updatedNewEditCategory($categoryId)
+    {
+        if (!empty($categoryId)) {
+            $this->filteredServices = Service::where('service_category_id', $categoryId)->get();
+        } else {
+            $this->filteredServices = collect();
+        }
+
+        $this->newEditService = '';
+    }
+
     public function render(TaskService $taskService, UserService $userService)
     {
         $tasks =  $taskService->getFilteredTask($this->selectedStatus, $this->selectedPrio);
@@ -228,6 +393,10 @@ class TaskBrowser extends Component
             ->orderBy('created_at', 'desc')
             ->paginate(8);
         $pendingTask = Task::where('status', 'pending')->count();
+        $technicians = User::with('technicianRole')
+            ->where('role', 'technician')
+            ->where('status', 'active')
+            ->get();
         return view('livewire.task-browser', [
             'tasks' => $tasks,
             'taskCount' => $taskCount,
@@ -236,6 +405,7 @@ class TaskBrowser extends Component
             'services' => $services,
             'serviceCategories' => $serviceCategories,
             'pendingTaskCount' => $pendingTask,
+            'technicians' => $technicians,
         ]);
     }
 }
