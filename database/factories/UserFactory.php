@@ -15,9 +15,9 @@ class UserFactory extends Factory
     {
         $user = [
             'fullname' => 'Danica Oliveria',
-            'username' => 'jirocustomer',
+            'username' => 'customer',
             'phone_number' => $this->faker->unique()->numerify('9#########'),
-            'password' => Hash::make('jirojiro'),
+            'password' => Hash::make('chlsmartsolutions'),
             'role' => 'customer',
         ];
 
@@ -38,7 +38,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Danica Oliveria',
             'role' => 'customer',
-            'username' => 'jirocustomer',
+            'username' => 'customer',
         ]);
     }
 
@@ -47,7 +47,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Jallien Resaba',
             'role' => 'cashier',
-            'username' => 'jirocashier',
+            'username' => 'chlcashier',
         ]);
     }
 
@@ -56,7 +56,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Alessandra Mingi',
             'role' => 'technician',
-            'username' => 'jirotechnician',
+            'username' => 'chltechnician',
         ]);
     }
 
@@ -65,7 +65,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Jiro Elijah Aguilar',
             'role' => 'admin_officer',
-            'username' => 'jiroadminofficer',
+            'username' => 'chladminofficer',
         ]);
     }
 
