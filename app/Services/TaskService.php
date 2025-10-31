@@ -9,7 +9,8 @@ class TaskService
 {
     public function getTasksByDate($user_id, $date, $prio)
     {
-        $query = Task::where('user_id', $user_id)
+        $query = Task::with('service')
+            ->where('user_id', $user_id)
             ->whereDate('created_at', '<=', $date)
             ->whereDate('expiry_date', '>=', $date);
 

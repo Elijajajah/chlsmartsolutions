@@ -34,7 +34,7 @@ class TechTask extends Component
     public function updateStatus($id, ActivityLogService $activityLogService)
     {
         $task = Task::find($id);
-        if ($task->status != 'completed'){
+        if ($task->status != 'completed') {
             $task->status = 'completed';
             $task->save();
             $activityLogService->saveLog($id, Auth::user()->id);

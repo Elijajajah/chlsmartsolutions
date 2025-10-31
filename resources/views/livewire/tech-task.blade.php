@@ -87,7 +87,7 @@
                                 {{ $task->id }}
                             </div>
                             <div class="w-[27.5%] text-start border-x border-[#EEF2F5] pl-2 py-4.5 h-full capitalize">
-                                {{ $task->title }}
+                                {{ $task->service->service }}
                             </div>
                             <div class="w-[17.5%] py-2 flex items-center justify-center h-full">
                                 @if ($task->priority == 'low')
