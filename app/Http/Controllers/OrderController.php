@@ -89,9 +89,10 @@ class OrderController
             // Attach to order
             $order->productSerials()->attach($serials->pluck('id')->toArray());
 
+            $newStatus = $request->type == 'online' ? 'reserved' : 'sold';
             // Mark serials as reserved
             ProductSerial::whereIn('id', $serials->pluck('id'))
-                ->update(['status' => 'reserved']);
+                ->update(['status' => $newStatus]);
         }
 
         session()->forget('cartItems');

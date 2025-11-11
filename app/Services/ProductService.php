@@ -98,15 +98,6 @@ class ProductService
                 $query->where('name', 'like', '%' . $search . '%');
             })
             ->orderByDesc('created_at')
-            ->paginate(10)
-            ->through(function ($product) {
-                // Count all serials that are either 'available' or 'reserved'
-                $availableStock = $product->availableReservedCount();
-
-                // Add adjusted stock property for easy access
-                $product->adjusted_stock = $availableStock;
-
-                return $product;
-            });
+            ->paginate(10);
     }
 }

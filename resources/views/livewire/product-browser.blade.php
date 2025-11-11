@@ -319,12 +319,12 @@
                                     <p class="line-clamp-1 capitalize">{{ $product->category->name }}</p>
                                 </div>
                                 <div class="w-[10%] py-7.5 md:py-9.5 px-1 border-x border-[#EEF2F5]">
-                                    {{ $product->adjusted_stock }}
+                                    {{ $product->availableReservedCount() }}
                                 </div>
                                 <div class="w-[15%] py-4 px-1">₱{{ number_format($product->retail_price, 2) }}</div>
                                 <div
                                     class="w-[15%] pr-1 border-x border-[#EEF2F5] py-6 md:py-8 flex items-center justify-center">
-                                    @if ($product->adjusted_stock == 0)
+                                    @if ($product->availableReservedCount() == 0)
                                         <div
                                             class="bg-[#dc262633] py-2 px-4 w-fit rounded-full text-[#DC2626] flex gap-1 items-center justify-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -336,7 +336,7 @@
                                             </svg>
                                             <p class="text-xs capitalize">Out of Stock</p>
                                         </div>
-                                    @elseif ($product->adjusted_stock <= $product->min_limit)
+                                    @elseif ($product->availableReservedCount() <= $product->min_limit)
                                         <div
                                             class="bg-[#ffeaba] py-2 px-4 w-fit rounded-full text-[#c77a0e] flex gap-1 items-center justify-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
