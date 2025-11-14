@@ -78,7 +78,7 @@
                     </div>
                 </div>
                 <div class="flex flex-col w-full">
-                    <h1 class="font-bold text-lg font-inter">Select Payment Method</h1>
+                    <h1 class="font-bold text-lg font-inter">In-store payment</h1>
                     <form method="POST" action="/order">
                         @csrf
                         <input type="text" class="hidden" name="total_amount" value="{{ $total }}">
