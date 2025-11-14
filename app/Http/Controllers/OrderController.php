@@ -29,12 +29,10 @@ class OrderController
     {
         $validator = Validator::make($request->all(), [
             'total_amount' => 'required',
-            'payment_method' => 'required',
             'type' => 'required',
             'status' => 'nullable'
         ], [
             'total_amount.required' => 'Total Amount is required',
-            'payment_method.required' => 'Please select payment type.',
             'type.required' => 'Please select a customer type.'
         ]);
 
@@ -44,10 +42,6 @@ class OrderController
             $message = $validator->errors()->first();
             notyf()->error($message);
             return redirect()->back();
-        }
-
-        if ($request->payment_method == 'e-wallet') {
-            return; //for now
         }
 
         foreach ($cartItems as $item) {
