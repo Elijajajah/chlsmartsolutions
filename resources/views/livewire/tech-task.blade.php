@@ -369,12 +369,62 @@
                         </div>
                     </div>
                 </div>
+                @if (!empty($selectedTask->description))
+                    <div class="flex flex-col w-full gap-2">
+                        <p class="font-semibold text-xs md:text-sm">Description:</p>
+                        <p class="text-[0.6rem] md:text-xs text-justify text-[#828282]">
+                            {{ $selectedTask->description }}
+                        </p>
+                    </div>
+                @endif
+
+                {{-- Add multiple file upload here --}}
                 <div class="flex flex-col w-full gap-2">
-                    <p class="font-semibold text-xs md:text-sm">Description:</p>
-                    <p class="text-[0.6rem] md:text-xs text-justify text-[#828282]">
-                        {{ $selectedTask->description }}
-                    </p>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend font-semibold text-xs md:text-sm">Pick a file</legend>
+                        <input type="file" class="file-input w-full" wire:model="images" multiple />
+                        <label class="label text-[0.6rem] md:text-xs">Max size 5MB (PNG, JPG, and JPEG only)</label>
+                    </fieldset>
+
+                    {{-- Preview existing images --}}
+                    @if ($existingImages)
+                        <div class="grid grid-cols-3 gap-2 mt-2">
+                            @foreach ($existingImages as $index => $image)
+                                <div class="relative w-full h-20 md:h-24">
+                                    <img src="{{ asset('storage/' . $image) }}"
+                                        class="w-full h-full object-cover rounded-md border">
+
+                                    {{-- Trash button --}}
+                                    <button type="button"
+                                        class="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 p-1 rounded-full text-xs shadow"
+                                        wire:click="removeExistingImage({{ $index }})">
+                                        x
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    {{-- Preview newly uploaded images --}}
+                    @if ($images)
+                        <div class="grid grid-cols-3 gap-2 mt-2">
+                            @foreach ($images as $index => $image)
+                                <div class="relative w-full h-20 md:h-24">
+                                    <img src="{{ $image->temporaryUrl() }}"
+                                        class="w-full h-full object-cover rounded-md border">
+
+                                    <button type="button"
+                                        class="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 p-1 rounded-full text-xs shadow"
+                                        wire:click="removeImage({{ $index }})">
+                                        x
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
+
+
                 <div class="flex items-center justify-center text-xs md:text-base w-full gap-4 mt-3 md:mt-6">
                     <button wire:click='updateStatus({{ $selectedTask->id }})'
                         class="cursor-pointer flex gap-1 md:gap-2 items-center py-2 px-4 bg-[#16A34A] rounded-md text-white">

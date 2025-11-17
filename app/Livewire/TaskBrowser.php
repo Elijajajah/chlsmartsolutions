@@ -28,7 +28,20 @@ class TaskBrowser extends Component
     public $catName = '', $newCatName = '', $catEditingId = null;
     public $searchService = '', $showAddModal = false, $newServiceName = '', $newCategory = '', $newAmount = 0.00;
     public $showEditModal = false, $editServiceId = null, $editServiceName = '', $editServiceCategory = '', $editAmount = 0;
+    public $images = [];
     public string $activeTab = 'taskBrowse';
+    public $previewImage = null;
+
+    public function openPreview($path)
+    {
+        $this->previewImage = $path;
+    }
+
+    public function closePreview()
+    {
+        $this->previewImage = null;
+    }
+
 
     // public function updatePriority($task_id, $priority)
     // {
@@ -91,8 +104,9 @@ class TaskBrowser extends Component
 
     public function editTask($id)
     {
-        $task = Task::find($id);
+        $task = Task::with('images')->find($id);
         $this->editTaskId = $id;
+        $this->images = $task->images;
         $this->newEditTechnician = $task->user_id ?? '';
         $this->newEditCategory = optional($task->service)->service_category_id;
         $this->updatedNewEditCategory($this->newEditCategory);

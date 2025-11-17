@@ -410,7 +410,8 @@
     @if ($showEditTask)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
             <div
-                class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg gap-2 md:gap-4 w-full p-6 md:p-8 relative font-poppins flex flex-col justify-center">
+                class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg w-full p-6 md:p-8 relative font-poppins flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+
                 <h1 class="text-[#203D3F] md:text-lg font-semibold">Add New Service</h1>
 
                 <div class="flex flex-col gap-2">
@@ -548,6 +549,23 @@
                     </div>
                 </div>
 
+                @if ($images && count($images) > 0)
+                    <div class="flex flex-col text-[#4f4f4f] gap-1 mt-2">
+                        <p class="text-xs md:text-sm font-medium">Task Images Proof</p>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            @foreach ($images as $img)
+                                <div class="w-full h-24 rounded-md overflow-hidden border cursor-pointer
+            hover:scale-105 transition-all duration-300"
+                                    wire:click="openPreview('{{ $img->path }}')">
+                                    <img src="{{ asset('storage/' . $img->path) }}"
+                                        class="w-full h-full object-cover">
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Buttons -->
                 <div class="flex flex-col md:flex-row items-center gap-2 md:gap-2">
                     <button type="button" wire:click="closeEditTask"
@@ -560,6 +578,14 @@
                     </button>
                 </div>
             </div>
+            @if ($previewImage)
+                <div class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center"
+                    wire:click="closePreview">
+
+                    <img src="{{ asset('storage/' . $previewImage) }}"
+                        class="max-w-[90%] max-h-[90%] rounded-lg shadow-lg border-4 border-white" wire:click.stop>
+                </div>
+            @endif
         </div>
     @endif
 
