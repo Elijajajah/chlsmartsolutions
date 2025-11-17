@@ -7,7 +7,7 @@
             </svg>
         </a>
         <div class="flex w-full md:border md:border-[#575757] rounded-3xl relative overflow-hidden font-montserrat">
-            <div class="w-full md:w-1/2 md:bg-[#1E1E1E] flex flex-col gap-6 text-center text-white px-4 md:px-26">
+            <div class="w-full md:w-1/2 md:bg-[#1E1E1E] flex flex-col gap-18 text-center text-white px-4 md:px-26">
                 <div class="flex flex-col mt-[25%] gap-2">
                     <h1 class="text-2xl md:text-3xl font-bold !tracking-widest">
                         Sign in
@@ -15,20 +15,8 @@
                     <p class="text-[0.6rem] md:text-[0.8rem] font-extralight">Enter your information to sign in to your
                         account </p>
                 </div>
-                <div class="flex flex-col items-center pt-4 pb-6 px-10 gap-4">
-                    <div
-                        class="w-full flex items-center justify-center gap-2 py-2 px-8 border border-[#D1D1D180] rounded-lg">
-                        <img class="h-5 md:h-6" src="{{ asset('images/google_icon.png') }}" alt="google_icon.png">
-
-                        <p class="text-[0.7rem] md:text-xs font-semibold">Sign in with Google</p>
-                    </div>
-                    <div class="flex items-center justify-center relative w-full">
-                        <p class="z-10 px-3 bg-black md:bg-[#1E1E1E] text-[0.6rem] font-light">or Sign in with your
-                            Account</p>
-                        <div class="absolute left-0 top-1/2 bg-white w-full h-[0.5px]"></div>
-                    </div>
-                </div>
-                <form action="/signin" method="POST" class="flex flex-col text-start">
+                <div class="flex flex-col gap-4">
+                    <form action="/signin" method="POST" class="flex flex-col text-start">
                     @csrf
                     <label for="username" class="block mb-2 text-sm text-white">Username</label>
                     <input id="username" type="text" name="username" value="{{ old('username') }}"
@@ -75,6 +63,7 @@
                 <p class="text-xs font-light mb-[25%]">Don't have an account yet? <span class="text-[#5B81FC]"><a
                             href="/signup">Sign
                             up</a></span></p>
+                </div>
             </div>
             <div class="hidden md:block z-50 absolute left-1/2 top-0 bottom-0 w-px border border-[#575757]"></div>
 

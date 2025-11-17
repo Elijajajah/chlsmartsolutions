@@ -58,10 +58,6 @@ class OrderController
 
         $expiry = now()->addDays(3)->toDateString();
         $status = 'pending';
-        if ($request->type != 'online') {
-            $expiry = now();
-            $status = 'completed';
-        }
 
         $order = Order::create([
             'reference_id' => $this->generateReferenceId($request->type, now()->format('mdY'), Auth::user()->id),
@@ -82,24 +78,12 @@ class OrderController
 
             // Attach to order
             $order->productSerials()->attach($serials->pluck('id')->toArray());
-
-            $newStatus = $request->type == 'online' ? 'reserved' : 'sold';
             // Mark serials as reserved
             ProductSerial::whereIn('id', $serials->pluck('id'))
-                ->update(['status' => $newStatus]);
+                ->update(['status' => 'reserved']);
         }
 
         session()->forget('cartItems');
-
-        if ($order->status == 'completed') {
-            $selectedOrder = Order::with('user')->find($order->id);
-            app(NotificationService::class)->createNotif(
-                $selectedOrder->user_id,
-                "Order Completed",
-                "{$selectedOrder->reference_id} placed by {$selectedOrder->user->fullname} has been successfully completed.",
-                ['owner', 'cashier', 'admin_officer'],
-            );
-        }
 
         notyf()->success('Order placed successfully');
         session([

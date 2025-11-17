@@ -29,7 +29,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Jiro Elijah Aguilar',
             'role' => 'owner',
-            'username' => 'jiroowner',
+            'username' => 'chladmin',
         ]);
     }
 
