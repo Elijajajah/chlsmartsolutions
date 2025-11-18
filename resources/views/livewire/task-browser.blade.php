@@ -255,7 +255,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
             <div
                 class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg gap-2 md:gap-4 w-full p-6 md:p-8 relative font-poppins flex flex-col justify-center">
-                <h1 class="text-[#203D3F] md:text-lg font-semibold">Add New Service</h1>
+                <h1 class="text-[#203D3F] md:text-lg font-semibold">Add New Task</h1>
 
                 <div class="flex flex-col gap-2">
                     <!-- Category -->
@@ -412,7 +412,7 @@
             <div
                 class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg w-full p-6 md:p-8 relative font-poppins flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
 
-                <h1 class="text-[#203D3F] md:text-lg font-semibold">Add New Service</h1>
+                <h1 class="text-[#203D3F] md:text-lg font-semibold">Add New Task</h1>
 
                 <div class="flex flex-col gap-2">
                     <!-- Category -->
