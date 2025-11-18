@@ -16,9 +16,6 @@
                 </svg>
             </div>
         </div>
-        <button class="cursor-pointer px-4 py-2 bg-[#203D3F] rounded-md text-white text-sm gap-2 whitespace-nowrap">
-            Download Report
-        </button>
     </div>
     <div class="flex flex-col md:flex-row gap-4 font-poppins">
         <div class="w-full md:w-[69%] flex flex-col gap-4">

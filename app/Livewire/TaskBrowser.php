@@ -261,7 +261,7 @@ class TaskBrowser extends Component
             return;
         }
 
-        ServiceCategory::create([
+        $cat = ServiceCategory::create([
             'category' => $this->catName,
         ]);
 

@@ -67,6 +67,13 @@ class HelpRequest extends Component
             'expiry_date' => null,
         ]);
 
+        app(NotificationService::class)->createNotif(
+            Auth::user()->id,
+            "New Task Requested",
+            "{$this->selectedService->service} has been requested successfully.",
+            ['owner', 'cashier', 'admin_officer'],
+        );
+
         notyf()->success('Service request successfully.');
         $this->closeRequest();
     }

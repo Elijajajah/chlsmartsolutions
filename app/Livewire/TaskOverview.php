@@ -24,12 +24,13 @@ class TaskOverview extends Component
 
     public function render()
     {
-        $tasks = Task::whereDate('created_at', '<=', now())
-                ->whereDate('expiry_date', '>=', now())
-                ->where('status', 'pending')
-                ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
-                ->take($this->take)
-                ->get();
+        $tasks = Task::with('service')
+            ->whereDate('created_at', '<=', now())
+            ->whereDate('expiry_date', '>=', now())
+            ->where('status', 'pending')
+            ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
+            ->take($this->take)
+            ->get();
 
         return view('livewire.task-overview', [
             'tasks' => $tasks
