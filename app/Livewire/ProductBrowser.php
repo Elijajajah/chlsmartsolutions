@@ -10,6 +10,7 @@ use App\Models\ProductSerial;
 use App\Services\ProductService;
 use App\Services\CategoryService;
 use Livewire\WithoutUrlPagination;
+use Illuminate\Validation\ValidationException;
 
 class ProductBrowser extends Component
 {
@@ -139,18 +140,39 @@ class ProductBrowser extends Component
     public function editCategory($id)
     {
         $category = Category::find($id);
+
+        // If already editing → save
         if ($this->editingId === $id) {
+
+            // Validate only when saving
+            try {
+                $this->validate([
+                    'name' => 'required|unique:categories,name,' . $id,
+                ], [
+                    'name.required' => 'The Category name is required.',
+                    'name.unique'   => 'This category name already exists.',
+                ]);
+            } catch (ValidationException $e) {
+                notyf()->error($e->validator->errors()->first());
+                return;
+            }
+
+            // Only save if something changed
             if ($this->name != $category->name) {
                 $category->name = $this->name;
                 $category->save();
                 notyf()->success('Category is renamed successfully');
             }
+
             $this->editingId = null;
-        } else {
-            $this->name = $category->name;
-            $this->editingId = $id;
+            return;
         }
+
+        // Not editing → start editing
+        $this->name = $category->name;
+        $this->editingId = $id;
     }
+
 
     public function removeCategory($id)
     {
