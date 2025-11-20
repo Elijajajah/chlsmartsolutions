@@ -14,9 +14,10 @@ class AddCategory extends Component
     {
         try {
             $validator = $this->validate([
-                'name' => 'required',
+                'name' => 'required|unique:categories,name',
             ], [
                 'name.required' => 'The Category name is required.',
+                'name.unique'   => 'This category name already exists.',
             ]);
         } catch (ValidationException $e) {
             $message = $e->validator->errors()->first();
