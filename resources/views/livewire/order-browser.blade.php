@@ -85,7 +85,7 @@
                     </svg>
                     <p class="text-sm">Add New Order</p>
                 </button>
-                <div class="flex items-center gap-2 md:gap-6">
+                <div class="flex items-center gap-2 md:gap-4">
                     <div class="relative text-[#797979]">
                         <input type="text" placeholder="Search order..."
                             wire:input.debounce.300ms="$set('search', $event.target.value)"
@@ -99,7 +99,6 @@
                             </svg>
                         </div>
                     </div>
-
                     <div class="relative text-[#797979]">
                         <select wire:change="$set('selectedStatus', $event.target.value)"
                             class="w-[150px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
@@ -108,6 +107,40 @@
                             <option value="1">Pending</option>
                             <option value="2">Completed</option>
                             <option value="3">Expired</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="relative text-[#797979]">
+                        <select wire:model.live="selectedType"
+                            class="w-[150px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
+                            name="status" id="status">
+                            <option value="">All Type</option>
+                            <option value="online">Online</option>
+                            <option value="walk_in">Walkin</option>
+                            <option value="government">Government</option>
+                            <option value="project_based">Project Based</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="relative text-[#797979]">
+                        <select wire:model.live="selectedDate"
+                            class="w-[150px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none">
+                            <option value="today">Today</option>
+                            <option value="this_week">This Week</option>
+                            <option value="this_month">This Month</option>
+                            <option selected value="this_year">This Year</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -176,8 +209,10 @@
                                     @endif
                                 </div>
                                 <div class="w-[15%] pr-4 py-3 flex items-center justify-center gap-2 text-xs">
-                                    <button wire:click='selectOrder({{ $order->id }})'
-                                        class="cursor-pointer text-[#3B82F6]">
+                                    <button
+                                        @if (auth()->user()->role === 'owner') wire:click="selectOrder({{ $order->id }})" @endif
+                                        class="{{ auth()->user()->role === 'owner' ? 'cursor-not-allowed text-gray-400' : 'cursor-pointer text-[#3B82F6]' }}""
+                                        {{ auth()->user()->role === 'owner' ? 'disabled' : '' }}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -248,7 +283,9 @@
                                     <h1 class="font-semibold text-xl mb-2">Order Details</h1>
                                     <p class="text-sm">Order #:
                                         {{ str_pad($selectedOrder->id, 4, '0', STR_PAD_LEFT) }}</p>
-                                    <p class="text-sm">Reference Id#: {{ $selectedOrder->reference_id }}</p>
+                                    <p class="text-sm">Customer: {{ $selectedOrder->customer_name }}</p>
+                                    <p class="text-sm">Type:
+                                        {{ ucwords(str_replace('_', ' ', $selectedOrder->type)) }}</p>
                                 </div>
                                 <div>
                                     @if ($selectedOrder->status == 'pending')
@@ -364,13 +401,20 @@
                         </button>
                         <h1 class="font-poppins font-semibold text-lg">Purchase Information</h1>
                     </div>
-                    <div class="flex flex-col md:flex-row gap-2 md:items-center font-inter md:gap-6">
+                    <form action="/order" method="POST" id="form"
+                        class="flex flex-col md:flex-row gap-2 md:items-center font-inter md:gap-6">
+                        @csrf
+                        <input type="text" class="hidden" name="total_amount" id="total_amount">
+                        <input type="text" class="hidden" name="payment_method" id="payment_method">
+                        <div class="flex flex-col text-[#4f4f4f] gap-1 w-full md:w-fit">
+                            <p class="text-sm font-medium">Product Name</p>
+                            <input type="text" placeholder="Enter Name..." wire:model.live="customer_name"
+                                id="customer_name" name="customer_name"
+                                class="text-sm md:text-base w-full md:w-fit pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                        </div>
                         <div class="flex flex-col text-[#797979] gap-1">
                             <p class="text-sm font-medium">Customer Type</p>
-                            <form action="/order" method="POST" id="form" class="relative">
-                                @csrf
-                                <input type="text" class="hidden" name="total_amount" id="total_amount">
-                                <input type="text" class="hidden" name="payment_method" id="payment_method">
+                            <div class="relative">
                                 <select wire:change="$set('type', $event.target.value)"
                                     class="w-full md:w-[250px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
                                     name="type" id="type">
@@ -386,7 +430,7 @@
                                             clip-rule="evenodd" />
                                     </svg>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                         <div class="flex flex-col text-[#797979] gap-1">
                             <p class="text-sm font-medium">Current Date</p>
@@ -405,7 +449,7 @@
                                 </svg>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
 
                 <div class="flex flex-col gap-6">

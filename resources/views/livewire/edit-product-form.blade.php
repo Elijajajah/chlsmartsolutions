@@ -1,18 +1,6 @@
 <form wire:submit='editProduct' class="rounded-md border border-gray-400 p-4 flex flex-col gap-4 w-full">
     <div class="flex flex-col md:flex-row gap-4 w-full">
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-            <p class="text-sm font-medium">Product Name</p>
-            <input type="text" placeholder="Enter Name..." value="{{ $name }}"
-                wire:input="$set('name', $event.target.value)"
-                class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none capitalize text-[#797979] text-sm md:text-base" />
-        </div>
-        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-            <p class="text-sm font-medium">Supplier/Distrubutor</p>
-            <input type="text" placeholder="Supplier/Distrubutor..."
-                wire:input="$set('supplier', $event.target.value)" value="{{ $supplier }}"
-                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
-        </div>
-        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
             <p class="text-sm font-medium">Category</p>
             <div class="flex items-center flex-1 relative text-[#797979]">
                 <select wire:model.live='categoryId'
@@ -31,6 +19,18 @@
                     </svg>
                 </div>
             </div>
+        </div>
+        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+            <p class="text-sm font-medium">Product Name</p>
+            <input type="text" placeholder="Enter Name..." value="{{ $name }}"
+                wire:input="$set('name', $event.target.value)"
+                class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none capitalize text-[#797979] text-sm md:text-base" />
+        </div>
+        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+            <p class="text-sm font-medium">Supplier/Distrubutor</p>
+            <input type="text" placeholder="Supplier/Distrubutor..."
+                wire:input="$set('supplier', $event.target.value)" value="{{ $supplier }}"
+                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
         </div>
     </div>
     <div class="flex flex-col md:flex-row gap-4 w-full">

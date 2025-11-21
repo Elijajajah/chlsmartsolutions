@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use ZipArchive;
 use App\Exports\SalesExport;
+use Illuminate\Http\Request;
 use App\Exports\ExpensesExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -12,13 +13,13 @@ class CSVExportController
     public function exportSales(Request $request)
     {
         $startDate = $request->query('startDate', now()->startOfYear()->toDateString());
-        return Excel::download(new SalesExport($startDate), 'sales.csv');
+        return Excel::download(new SalesExport($startDate), 'sales.xlsx');
     }
 
     public function exportExpenses(Request $request)
     {
         $startDate = $request->query('startDate', now()->startOfYear()->toDateString());
-        return Excel::download(new ExpensesExport($startDate), 'expenses.csv');
+        return Excel::download(new ExpensesExport($startDate), 'expenses.xlsx');
     }
 
     public function exportAll(Request $request)
@@ -29,15 +30,15 @@ class CSVExportController
         $expensesCsv = Excel::raw(new ExpensesExport($startDate), \Maatwebsite\Excel\Excel::CSV);
 
         $zipFilePath = tempnam(sys_get_temp_dir(), 'all_reports_');
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
 
         $tempStream = tmpfile();
         $metaData = stream_get_meta_data($tempStream);
         $tmpFilePath = $metaData['uri'];
 
-        if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
-            $zip->addFromString('sales.csv', $salesCsv);
-            $zip->addFromString('expenses.csv', $expensesCsv);
+        if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            $zip->addFromString('sales.xlsx', $salesCsv);
+            $zip->addFromString('expenses.xlsx', $expensesCsv);
             $zip->close();
         } else {
             abort(500, 'Failed to create zip archive.');

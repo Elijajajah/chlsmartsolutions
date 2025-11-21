@@ -36,6 +36,7 @@ class OrderController
             'type.required' => 'Please select a customer type.'
         ]);
 
+        $customer_name = trim($request->customer_name ?? '') ?: Auth::user()->fullname;
         $cartItems = session()->get('cartItems', []);
 
         if ($validator->fails()) {
@@ -56,17 +57,24 @@ class OrderController
             }
         }
 
-        $expiry = now()->addDays(3)->toDateString();
+        $expiry = now()->addDays(1)->toDateString();
         $status = 'pending';
 
         $order = Order::create([
-            'reference_id' => $this->generateReferenceId($request->type, now()->format('mdY'), Auth::user()->id),
             'user_id' => Auth::user()->id,
+            'customer_name' => $customer_name,
             'total_amount' => $request->total_amount,
             'type' => $request->type,
             'status' => $status,
             'expiry_date' => $expiry,
         ]);
+
+        $referenceId = $this->generateReferenceId(
+            $request->type,
+            now()->format('mdY'),
+            $order->id
+        );
+        $order->update(['reference_id' => $referenceId]);
 
         foreach ($cartItems as $item) {
             $serialNumbers = is_array($item->serials) ? $item->serials : [];

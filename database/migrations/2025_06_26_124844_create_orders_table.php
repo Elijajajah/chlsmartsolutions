@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('reference_id');
+            $table->string('reference_id')->nullable()->unique();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('customer_name');
             $table->decimal('total_amount', 10, 2);
             $table->enum('type', ['government', 'walk_in', 'project_based', 'online']);
             $table->enum('status', ['pending', 'completed', 'expired'])->default('pending');

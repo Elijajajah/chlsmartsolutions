@@ -14,10 +14,11 @@ class OrderBrowser extends Component
 {
     use WithPagination, WithoutUrlPagination;
     public $selectedStatus = 0;
+    public $selectedType = '', $selectedDate = 'today';
     public $search = '';
     public $selectedOrder = null;
     public $showModal = false;
-    public $type = null;
+    public $type = null, $customer_name = '';
     public string $activeTab = 'orderBrowse';
 
     public function selectOrder($order_id)
@@ -41,7 +42,7 @@ class OrderBrowser extends Component
 
     public function render(OrderService $orderService)
     {
-        $orders = $orderService->getFilteredOrders($this->selectedStatus, $this->search);
+        $orders = $orderService->getFilteredOrders($this->selectedStatus, $this->search, $this->selectedType, $this->selectedDate);
         return view('livewire.order-browser', [
             'orders' => $orders
         ]);
@@ -89,6 +90,11 @@ class OrderBrowser extends Component
     {
         if (empty(session('cartItems'))) {
             notyf()->error('Your product list is empty.');
+            return;
+        }
+
+        if (!trim($this->customer_name ?? '')) {
+            notyf()->error('Please select a customer name.');
             return;
         }
 

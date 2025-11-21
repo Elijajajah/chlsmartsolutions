@@ -16,7 +16,8 @@ class ProductForm extends Component
 {
     use WithFileUploads;
     public $name;
-    public $supplier;
+    public $supplier = '';
+    public $supplierSuggestions = [];
     public $categoryId;
     public $original_price;
     public $retail_price;
@@ -34,6 +35,26 @@ class ProductForm extends Component
         $this->serial_numbers[] = '';
     }
 
+    public function updatedSupplier($value)
+    {
+        if (empty($value)) {
+            $this->supplierSuggestions = [];
+            return;
+        }
+
+        $this->supplierSuggestions = Product::where('supplier', 'like', '%' . $value . '%')
+            ->distinct()
+            ->pluck('supplier')
+            ->take(5)
+            ->toArray();
+    }
+
+    public function selectSupplier($name)
+    {
+        $this->supplier = $name;
+        $this->supplierSuggestions = [];
+    }
+
     public function removeSerial($index)
     {
         unset($this->serial_numbers[$index]);
@@ -49,9 +70,9 @@ class ProductForm extends Component
                 'name' => 'required|unique:products,name|max:255',
                 'categoryId' => 'required|exists:categories,id',
                 'supplier' => 'required',
-                'original_price' => 'required|min:0',
-                'retail_price' => 'required|min:0',
-                'min_limit' => 'required|min:0',
+                'original_price' => 'required|gt:0',
+                'retail_price' => 'required|gt:0|gt:original_price',
+                'min_limit' => 'required|min:1',
                 'description' => 'required',
                 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
             ], [
@@ -66,11 +87,11 @@ class ProductForm extends Component
                 'categoryId.exists' => 'The selected category does not exist.',
                 'supplier.required' => 'Supplier/Contributor is required.',
                 'original_price.required' => 'Product price is required.',
-                'original_price.min' => 'Product price must be zero or greater.',
+                'original_price.gt' => 'Product price must be greater than zero.',
                 'retail_price.required' => 'Product price is required.',
-                'retail_.min' => 'Product price must be zero or greater.',
+                'retail_price.gt' => 'Retail price must be greater than the original price and cannot be zero.',
                 'min_limit.required' => 'Minimum stock is required.',
-                'min_limit.min' => 'Minimum stock must be at least 0.',
+                'min_limit.min' => 'Minimum stock must be at least 1.',
                 'description.required' => 'Product description is required.',
                 'image.image' => 'Uploaded file must be an image.',
                 'image.mimes' => 'Image must be a JPG, JPEG, or PNG file.',

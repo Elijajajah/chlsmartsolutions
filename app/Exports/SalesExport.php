@@ -2,12 +2,14 @@
 
 namespace App\Exports;
 
+use Carbon\Carbon;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Events\AfterSheet;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\FromArray;
-use Carbon\Carbon;
 
-class SalesExport implements FromArray
+class SalesExport implements FromArray, WithEvents
 {
     protected $startDate;
 
@@ -77,5 +79,25 @@ class SalesExport implements FromArray
         $result[] = $grandTotal;
 
         return $result;
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+
+                $sheet = $event->sheet->getDelegate();
+
+                // Lock the sheet
+                $sheet->getProtection()->setSheet(true);
+
+                // Optional: password
+                $sheet->getProtection()->setPassword('mypassword');
+
+                // Optional: allow selection only
+                $sheet->getProtection()->setSort(false);
+                $sheet->getProtection()->setInsertRows(false);
+            }
+        ];
     }
 }

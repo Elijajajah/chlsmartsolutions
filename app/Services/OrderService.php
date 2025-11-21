@@ -6,7 +6,7 @@ use App\Models\Order;
 
 class OrderService
 {
-    public function getFilteredOrders($status, $search = null)
+    public function getFilteredOrders($status, $search = null, $type, $dateRange)
     {
         $statusValue = match (true) {
             $status == 1 => 'pending',
@@ -15,9 +15,19 @@ class OrderService
             default => null,
         };
 
+        $dates = match ($dateRange) {
+            'today'      => [now()->startOfDay(), now()->endOfDay()],
+            'this_week'  => [now()->startOfWeek(), now()->endOfWeek()],
+            'this_month' => [now()->startOfMonth(), now()->endOfMonth()],
+            'this_year'  => [now()->startOfYear(), now()->endOfYear()],
+            default      => null,
+        };
+
         return Order::query()
             ->when($statusValue, fn($query) => $query->where('status', $statusValue))
             ->when($search, fn($query) => $query->where('reference_id', 'like', '%' . $search . '%'))
+            ->when($type, fn($query) => $query->where('type', $type))
+            ->when($dates, fn($query) => $query->whereBetween('created_at', $dates))
             ->orderBy('created_at', 'desc')
             ->paginate(10);
     }

@@ -1,11 +1,6 @@
 <form wire:submit='createProduct' class="rounded-md border border-gray-400 p-4 flex flex-col gap-4 w-full">
     <div class="flex flex-col md:flex-row gap-4 w-full">
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-            <p class="text-sm font-medium">Product Name</p>
-            <input type="text" placeholder="Enter Name..." wire:input="$set('name', $event.target.value)"
-                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
-        </div>
-        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
             <p class="text-sm font-medium">Category</p>
             <div class="flex items-center flex-1 relative text-[#797979]">
                 <select wire:change="$set('categoryId', $event.target.value)"
@@ -25,11 +20,30 @@
             </div>
         </div>
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-            <p class="text-sm font-medium">Supplier/Distrubutor</p>
-            <input type="text" placeholder="Supplier/Distrubutor..."
-                wire:input="$set('supplier', $event.target.value)"
+            <p class="text-sm font-medium">Product Name</p>
+            <input type="text" placeholder="Enter Name..." wire:input="$set('name', $event.target.value)"
                 class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
         </div>
+        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1 relative" x-data="{ open: false }"
+            @click.away="open = false">
+            <p class="text-sm font-medium">Supplier/Distributor</p>
+
+            <input type="text" placeholder="Supplier/Distributor..." wire:model.live="supplier" @input="open = true"
+                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+
+            @if (!empty($supplierSuggestions))
+                <ul class="absolute left-0 top-full mt-1 z-20 bg-white border rounded-md w-full shadow-lg max-h-48 overflow-y-auto"
+                    x-show="open">
+                    @foreach ($supplierSuggestions as $item)
+                        <li class="px-3 py-2 hover:bg-gray-200 cursor-pointer"
+                            wire:click="selectSupplier('{{ $item }}')" @click="open = false">
+                            {{ ucwords($item) }}
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+
     </div>
     <div class="flex flex-col md:flex-row gap-4 w-full">
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">

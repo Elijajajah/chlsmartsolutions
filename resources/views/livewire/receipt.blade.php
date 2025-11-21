@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <div class="flex flex-col">
-                    <p class="font-bold mb-2 text-xs md:text-base">Sales Receipt</p>
+                    <p class="font-bold mb-2 text-xs md:text-base">Sales Invoice</p>
                     <div class="flex items-center justify-between text-[0.7rem] md:text-sm">
                         <p>Reference #: <span class="text-[#747474]">{{ session('referenceId') }}</span></p>
                         <p>Order #:<span class="text-[#747474]">{{ session('orderId') }}</span></p>
