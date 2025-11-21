@@ -5,8 +5,8 @@
             class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
     </div>
     <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-        <p class="text-sm font-medium">Username</p>
-        <input wire:input="$set('username', $event.target.value)" type="text" placeholder="Enter username..."
+        <p class="text-sm font-medium">Email</p>
+        <input wire:model.live="email" type="text" placeholder="Enter email..."
             class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
     </div>
     <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
@@ -48,7 +48,8 @@
             class="w-full md:w-auto cursor-pointer flex gap-2 items-center justify-center py-2 px-4 bg-[#F2F2F2] rounded-md">
             Cancel
         </button>
-        <button class="w-full md:w-auto cursor-pointer flex gap-2 items-center justify-center py-2 px-4 bg-[#203D3F] rounded-md text-white"
+        <button
+            class="w-full md:w-auto cursor-pointer flex gap-2 items-center justify-center py-2 px-4 bg-[#203D3F] rounded-md text-white"
             type="submit">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -59,4 +60,17 @@
             <p>Create User</p>
         </button>
     </div>
+    @if ($otpSent)
+        <div id="otpModal" class="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 w-96">
+                <h2 class="text-xl font-bold mb-4">Enter OTP</h2>
+                <p class="text-sm mb-4">We sent a 6-digit OTP to {{ $email }}</p>
+                <input wire:model.live="otpInput" type="text" id="otpInput" maxlength="6"
+                    class="w-full px-3 py-2 border rounded mb-4" placeholder="Enter OTP">
+                <button id="verifyOtpBtn" class="w-full bg-green-600 text-white py-2 rounded font-semibold">Verify
+                    OTP</button>
+                <p id="otpError" class="text-red-500 mt-2 text-sm hidden"></p>
+            </div>
+        </div>
+    @endif
 </form>
