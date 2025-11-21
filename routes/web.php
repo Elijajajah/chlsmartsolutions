@@ -15,7 +15,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/signin', [RouteController::class, 'goToSigninPage'])->name('signin.page');
     Route::get('/signup', [RouteController::class, 'goToSignupPage'])->name('signup.page');
     Route::post('/signin', [AuthController::class, 'userSignin'])->name('signin');
-    Route::post('/signup', [AuthController::class, 'userSignup'])->name('signup');
+    Route::post('/signup/send-otp', [AuthController::class, 'sendOtp']);
+    Route::post('/signup/verify-otp', [AuthController::class, 'verifyOtp']);
 });
 
 

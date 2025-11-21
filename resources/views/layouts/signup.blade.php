@@ -44,8 +44,8 @@
                         <label for="fullname" class="block mb-2 text-sm text-white">Full Name</label>
                         <input id="fullname" type="text" name="fullname" value="{{ old('fullname') }}"
                             class="outline outline-[#E0E0E0] w-full rounded-md px-3 py-2 bg-transparent text-white mb-4" />
-                        <label for="username" class="block mb-2 text-sm text-white">Username</label>
-                        <input id="username" type="text" name="username" value="{{ old('username') }}"
+                        <label for="email" class="block mb-2 text-sm text-white">Email</label>
+                        <input id="email" type="text" name="email" value="{{ old('email') }}"
                             class="outline outline-[#E0E0E0] w-full rounded-md px-3 py-2 bg-transparent text-white mb-4" />
                         <div class="relative">
                             <div class="absolute top-9 left-3 text-white flex items-center justify-center gap-2">
@@ -103,10 +103,24 @@
             </div>
         </div>
     </section>
+    <div id="otpModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-96">
+            <h2 class="text-xl font-bold mb-4">Enter OTP</h2>
+            <p class="text-sm mb-4">We sent a 6-digit code to your email.</p>
+            <input type="text" id="otpInput" maxlength="6" class="w-full px-3 py-2 border rounded mb-4"
+                placeholder="Enter OTP">
+            <button id="verifyOtpBtn" class="w-full bg-green-600 text-white py-2 rounded font-semibold">Verify
+                OTP</button>
+            <p id="otpError" class="text-red-500 mt-2 text-sm hidden"></p>
+        </div>
+    </div>
 </x-default>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const notyf = new Notyf();
+
         const passwordField = document.getElementById('password');
         const toggleButton = document.getElementById('togglePassword');
         const eyeOpen = document.getElementById('eyeOpen');
@@ -120,5 +134,64 @@
                 eyeClosed.classList.toggle('hidden', isHidden);
             });
         }
+
+        const signupForm = document.querySelector('form[action="/signup"]');
+        const otpModal = document.getElementById('otpModal');
+        const otpInput = document.getElementById('otpInput');
+        const verifyBtn = document.getElementById('verifyOtpBtn');
+        const otpError = document.getElementById('otpError');
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(signupForm);
+
+            const res = await fetch('/signup/send-otp', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                        .content
+                },
+                body: formData
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                otpModal.classList.remove('hidden'); // show OTP modal
+                notyf.success(result.message || 'OTP sent to your email');
+            } else {
+                notyf.error(result.error || 'Something went wrong');
+            }
+        });
+
+        verifyBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const otp = otpInput.value;
+
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('otp', otp);
+
+            const res = await fetch('/signup/verify-otp', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                        .content
+                },
+                body: formData
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                notyf.success(result.message || 'Account created successfully');
+                window.location.href = '/signin';
+            } else {
+                otpError.textContent = result.error || 'Invalid OTP';
+                otpError.classList.remove('hidden');
+                notyf.error(result.error || 'Invalid OTP');
+            }
+        });
     });
 </script>

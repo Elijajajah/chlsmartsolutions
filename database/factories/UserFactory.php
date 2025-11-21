@@ -15,7 +15,7 @@ class UserFactory extends Factory
     {
         $user = [
             'fullname' => 'Danica Oliveria',
-            'username' => 'customer',
+            'email' => 'customer@gmail.com',
             'phone_number' => $this->faker->unique()->numerify('9#########'),
             'password' => Hash::make('chlsmartsolutions'),
             'role' => 'customer',
@@ -29,7 +29,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Jiro Elijah Aguilar',
             'role' => 'owner',
-            'username' => 'chladmin',
+            'email' => 'chladmin@gmail.com',
         ]);
     }
 
@@ -38,7 +38,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Danica Oliveria',
             'role' => 'customer',
-            'username' => 'customer',
+            'email' => 'customer@gmail.com',
         ]);
     }
 
@@ -47,7 +47,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Jallien Resaba',
             'role' => 'cashier',
-            'username' => 'chlcashier',
+            'email' => 'chlcashier@gmail.com',
         ]);
     }
 
@@ -56,7 +56,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Alessandra Mingi',
             'role' => 'technician',
-            'username' => 'chltechnician',
+            'email' => 'chltechnician@gmail.com',
         ]);
     }
 
@@ -65,7 +65,7 @@ class UserFactory extends Factory
         return $this->state(fn() => [
             'fullname' => 'Jiro Elijah Aguilar',
             'role' => 'admin_officer',
-            'username' => 'chladminofficer',
+            'email' => 'chladminofficer@gmail.com',
         ]);
     }
 
