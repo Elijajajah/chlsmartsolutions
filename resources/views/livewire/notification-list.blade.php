@@ -36,7 +36,7 @@
         @forelse ($notifications as $notification)
             <div type="button" wire:click="markAsRead({{ $notification->id }})"
                 class="w-full transition cursor-pointer
-                    {{ $notification->read_at ? 'bg-[#F0F0F0]' : 'bg-white' }} text-[#203D3F] flex flex-col gap-1 relative font-poppins p-4 rounded-md">
+                    {{ $notification->pivot->read_at ? 'bg-[#F0F0F0]' : 'bg-white' }} text-[#203D3F] flex flex-col gap-1 relative font-poppins p-4 rounded-md">
                 <p class="absolute top-4 right-4 text-[0.6rem] md:text-xs text-[#4E4E4E]">
                     {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}</p>
                 <h1 class="font-semibold text-sm md:text-base">{{ $notification->title }}</h1>

@@ -170,7 +170,7 @@
                                 <div class="w-[25%] py-4">₱{{ number_format($order->total_amount, 2) }}</div>
                                 <div
                                     class="w-[20%] pr-1 border-x border-[#EEF2F5] py-3 flex items-center justify-center">
-                                    @if ($order->status == 'pending')
+                                    @if ($order->status == 'pending' || $order->status == 'reserved')
                                         <div
                                             class="bg-[#ffeaba] py-2 px-4 w-fit rounded-full text-[#c77a0e] flex gap-1 items-center justify-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -299,7 +299,7 @@
                                         {{ ucwords(str_replace('_', ' ', $selectedOrder->type)) }}</p>
                                 </div>
                                 <div>
-                                    @if ($selectedOrder->status == 'pending')
+                                    @if ($selectedOrder->status == 'pending' || $selectedOrder->status == 'reserved')
                                         <div
                                             class="bg-[#ffeaba] py-2 px-4 w-fit rounded-full text-[#c77a0e] flex gap-1 items-center justify-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"

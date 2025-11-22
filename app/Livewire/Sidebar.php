@@ -15,11 +15,12 @@ class Sidebar extends Component
 
     public function updateUnreadCount()
     {
-        $this->unreadNotif = match (Auth::user()->role) {
-            'technician' => Notification::where('user_id', Auth::id())->whereNull('read_at')->count(),
-            default => Notification::whereJsonContains('visible_to', Auth::user()->role)->whereNull('read_at')->count(),
-        };
+        $this->unreadNotif = Auth::user()
+            ->notifications()
+            ->wherePivotNull('read_at')
+            ->count();
     }
+
     public function mount($items = [])
     {
         $this->updateUnreadCount();

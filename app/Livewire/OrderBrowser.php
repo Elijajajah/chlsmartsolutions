@@ -62,13 +62,13 @@ class OrderBrowser extends Component
 
     public function updateStatus($id, $status)
     {
-        // Validate payment method only if the order is being completed or reserved
         if (in_array($status, ['sold', 'reserved'])) {
             try {
                 $this->validate([
-                    'payment_method' => 'required',
+                    'payment_method' => 'required|not_in:none',
                 ], [
                     'payment_method.required' => 'Payment Method is required.',
+                    'payment_method.not_in' => 'Please select a valid payment method.',
                 ]);
             } catch (ValidationException $e) {
                 $message = $e->validator->errors()->first();
@@ -84,8 +84,8 @@ class OrderBrowser extends Component
             return;
         }
 
-        if ($order->status !== 'pending') {
-            notyf()->error('Order has expired.');
+        if ($order->status === 'canceled') {
+            notyf()->error('Only has already been canceled.');
             return;
         }
 
