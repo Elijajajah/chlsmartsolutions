@@ -339,6 +339,24 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="relative text-[#797979] mr-auto">
+                            <select wire:model.live="payment_method" @if ($selectedOrder->status !== 'pending') disabled @endif
+                                class="w-[200px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
+                                name="status" id="status">
+                                <option value="none">Payment Method</option>
+                                <option value="cheque">Cheque</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="ewallet">E-Wallet</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
                         <div class="flex flex-col gap-2 w-full">
                             <h1 class="font-medium">Order items({{ count($selectedOrder->productSerials) }})</h1>
                             <div class="flex items-center text-center text-xs text-[#747474]">

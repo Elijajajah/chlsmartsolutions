@@ -22,6 +22,7 @@ class OrderFactory extends Factory
             'user_id' => 2,
             'total_amount' => $this->faker->numberBetween(1000, 20000),
             'type' => $this->faker->randomElement(['government', 'walk_in', 'project_based', 'online']),
+            'payment_method' => $this->faker->randomElement(['cheque', 'bank_transfer', 'cash', 'ewallet']),
             'customer_name' => $this->faker->name,
             'status' => 'completed',
             'created_at' => $this->faker->dateTimeBetween('-1 months', '-1 day'),

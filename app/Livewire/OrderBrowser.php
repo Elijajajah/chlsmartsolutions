@@ -6,13 +6,14 @@ use App\Models\Order;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Services\OrderService;
+use App\Mail\OrderCanceledMail;
+use App\Mail\OrderReservedMail;
+use App\Mail\OrderCompletedMail;
 use Livewire\WithoutUrlPagination;
 use Illuminate\Support\Facades\Auth;
-use App\Services\NotificationService;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\OrderReservedMail;
-use App\Mail\OrderCanceledMail;
-use App\Mail\OrderCompletedMail;
+use App\Services\NotificationService;
+use Illuminate\Validation\ValidationException;
 
 class OrderBrowser extends Component
 {
@@ -22,13 +23,14 @@ class OrderBrowser extends Component
     public $search = '';
     public $selectedOrder = null;
     public $showModal = false;
-    public $type = null, $customer_name = '';
+    public $type = null, $customer_name = '', $payment_method = 'none';
     public string $activeTab = 'orderBrowse';
 
     public function selectOrder($order_id)
     {
         $this->showModal = true;
         $this->selectedOrder = Order::with('productSerials.product')->find($order_id);
+        $this->payment_method = $this->selectedOrder->payment_method;
     }
 
     public function closeModal()
@@ -60,6 +62,21 @@ class OrderBrowser extends Component
 
     public function updateStatus($id, $status)
     {
+        // Validate payment method only if the order is being completed or reserved
+        if (in_array($status, ['sold', 'reserved'])) {
+            try {
+                $this->validate([
+                    'payment_method' => 'required',
+                ], [
+                    'payment_method.required' => 'Payment Method is required.',
+                ]);
+            } catch (ValidationException $e) {
+                $message = $e->validator->errors()->first();
+                notyf()->error($message);
+                return;
+            }
+        }
+
         $order = Order::with('productSerials')->findOrFail($id);
 
         if ($order->status === 'completed') {
@@ -74,12 +91,11 @@ class OrderBrowser extends Component
 
         switch ($status) {
             case 'sold':
-                // Mark serials as sold
                 $order->productSerials()->update(['status' => 'sold']);
-                // Mark order as completed
-                $order->status = 'completed';
-                $order->updated_at = now();
-                $order->save();
+                $order->update([
+                    'status' => 'completed',
+                    'payment_method' => $this->payment_method
+                ]);
 
                 if ($order->user->role === 'customer') {
                     Mail::to($order->user->email)->send(new OrderCompletedMail($order));
@@ -96,11 +112,11 @@ class OrderBrowser extends Component
                 break;
 
             case 'reserved':
-                // Mark serials as reserved, order stays pending
                 $order->productSerials()->update(['status' => 'reserved']);
-                $order->status = 'reserved';
-                $order->updated_at = now();
-                $order->save();
+                $order->update([
+                    'status' => 'reserved',
+                    'payment_method' => $this->payment_method
+                ]);
 
                 if ($order->user->role === 'customer') {
                     Mail::to($order->user->email)->send(new OrderReservedMail($order));
@@ -110,11 +126,8 @@ class OrderBrowser extends Component
                 break;
 
             case 'cancel':
-                // Revert serials to available
                 $order->productSerials()->update(['status' => 'available']);
-                $order->status = 'canceled';
-                $order->updated_at = now();
-                $order->save();
+                $order->update(['status' => 'canceled']);
 
                 if ($order->user->role === 'customer') {
                     Mail::to($order->user->email)->send(new OrderCanceledMail($order));
@@ -126,6 +139,7 @@ class OrderBrowser extends Component
                     "{$order->reference_id} placed by {$order->user->fullname} has been canceled.",
                     ['owner', 'cashier', 'admin_officer'],
                 );
+
                 notyf()->success('Order has been canceled and products are now available.');
                 break;
 
