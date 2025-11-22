@@ -102,9 +102,8 @@ class OrderBrowser extends Component
                 }
 
                 app(NotificationService::class)->createNotif(
-                    Auth::user()->id,
                     'Order Completed',
-                    "{$order->reference_id} placed by {$order->user->fullname} has been successfully completed.",
+                    "{$order->reference_id} placed by {$order->customer_name} has been successfully completed.",
                     ['owner', 'cashier', 'admin_officer'],
                 );
 
@@ -122,6 +121,12 @@ class OrderBrowser extends Component
                     Mail::to($order->user->email)->send(new OrderReservedMail($order));
                 }
 
+                app(NotificationService::class)->createNotif(
+                    'Order Reserved',
+                    "{$order->reference_id} placed by {$order->customer_name} has been reserved.",
+                    ['owner', 'cashier', 'admin_officer'],
+                );
+
                 notyf()->success('Products have been reserved, order remains pending.');
                 break;
 
@@ -134,9 +139,8 @@ class OrderBrowser extends Component
                 }
 
                 app(NotificationService::class)->createNotif(
-                    Auth::user()->id,
                     'Order Canceled',
-                    "{$order->reference_id} placed by {$order->user->fullname} has been canceled.",
+                    "{$order->reference_id} placed by {$order->customer_name} has been canceled.",
                     ['owner', 'cashier', 'admin_officer'],
                 );
 

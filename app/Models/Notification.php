@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Notification extends Model
 {
     protected $fillable = [
-        'user_id',
         'title',
         'message',
-        'visible_to',
     ];
 
-    protected $casts = [
-        'visible_to' => 'array',
-    ];
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'notification_users')
+            ->withPivot('read_at')
+            ->withTimestamps();
+    }
 }

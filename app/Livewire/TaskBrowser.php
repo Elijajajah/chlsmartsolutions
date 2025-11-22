@@ -42,54 +42,6 @@ class TaskBrowser extends Component
         $this->previewImage = null;
     }
 
-
-    // public function updatePriority($task_id, $priority)
-    // {
-    //     $task = Task::find($task_id);
-
-    //     if ($task) {
-    //         $task->priority = $priority;
-    //         $task->save();
-
-    //         notyf()->success('Status updated successfully');
-    //     }
-    // }
-
-    // public function updateAssignedTech($task_id, $user_id)
-    // {
-    //     $task = Task::find($task_id);
-
-    //     if ($task) {
-    //         $oldTechnicianId = $task->user_id;
-
-    //         $task->user_id = $user_id ?: null;
-    //         if (!$oldTechnicianId && $task->user_id && $task->status === 'unassigned') {
-    //             $task->status = 'pending';
-    //         }
-    //         $task->save();
-
-    //         if ($task->user_id) {
-    //             app(NotificationService::class)->createNotif(
-    //                 $task->user_id,
-    //                 "Task Assigned Successfully",
-    //                 'The task titled "' . Str::title($task->title) . '" requested by ' . $task->customer_name . ' has been assigned to you.',
-    //                 ['technician'],
-    //             );
-    //         }
-
-    //         if ($oldTechnicianId && $oldTechnicianId != $task->user_id) {
-    //             app(NotificationService::class)->createNotif(
-    //                 $oldTechnicianId,
-    //                 "Task Reassigned",
-    //                 'The task titled "' . Str::title($task->title) . '" requested by ' . $task->customer_name . ' has been reassigned to another technician.',
-    //                 ['technician'],
-    //             );
-    //         }
-
-    //         notyf()->success('Assigned successfully');
-    //     }
-    // }
-
     public function closeAddTask()
     {
         $this->reset(['newAddTechnician', 'filteredServices', 'newAddCategory', 'newAddService', 'newAddPriority', 'newAddDue', 'newAddFullName', 'newAddPhoneNumber', 'newAddDescription']);
@@ -159,6 +111,16 @@ class TaskBrowser extends Component
             return;
         }
 
+        // Create technician notification (last)
+        if ($this->newEditTechnician) {
+            app(NotificationService::class)->createNotif(
+                "Task Reassigned",
+                'The task for "' . Str::title(optional($task->service)->service ?? 'Unknown Service') . '" has been reassigned to you. Please check your task list for details.',
+                null,
+                $task->user_id
+            );
+        }
+
         $task->update([
             'user_id' => $this->newEditTechnician,
             'service_id' => $this->newEditService,
@@ -173,10 +135,10 @@ class TaskBrowser extends Component
         // Create technician notification (if assigned)
         if ($this->newEditTechnician) {
             app(NotificationService::class)->createNotif(
-                $task->user_id,
                 "New Task Assigned",
                 'A new task for "' . Str::title(optional($task->service)->service ?? 'Unknown Service') . '" has been assigned to you. Please check your task list for details.',
-                ['technician'],
+                null,
+                $this->newEditTechnician
             );
         }
 
@@ -235,10 +197,10 @@ class TaskBrowser extends Component
         // Create technician notification (if assigned)
         if ($this->newAddTechnician) {
             app(NotificationService::class)->createNotif(
-                $task->user_id,
                 "New Task Assigned",
                 'A new task for "' . Str::title(optional($task->service)->service ?? 'Unknown Service') . '" has been assigned to you. Please check your task list for details.',
-                ['technician'],
+                null,
+                $task->user_id,
             );
         }
 

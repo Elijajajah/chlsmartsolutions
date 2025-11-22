@@ -66,4 +66,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(TechnicianRole::class);
     }
+
+    public function notifications()
+    {
+        return $this->belongsToMany(Notification::class, 'notification_users')
+            ->withPivot('read_at')
+            ->withTimestamps();
+    }
 }

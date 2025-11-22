@@ -67,10 +67,9 @@ class HelpRequest extends Component
         ]);
 
         app(NotificationService::class)->createNotif(
-            Auth::user()->id,
             "New Task Requested",
             "{$this->selectedService->service} has been requested successfully.",
-            ['owner', 'cashier', 'admin_officer'],
+            ['cashier', 'admin_officer'],
         );
 
         notyf()->success('Service request successfully.');

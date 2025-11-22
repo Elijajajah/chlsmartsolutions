@@ -20,27 +20,23 @@ class NotificationList extends Component
 
     public function loadNotifications(NotificationService $notificationService)
     {
-        $this->notifications = $notificationService->getFilteredNotification(Auth::user()->id, $this->selectedMessage, Auth::user()->role);
+        $this->notifications = $notificationService->getFilteredNotification(Auth::id(), $this->selectedMessage);
     }
 
     public function markAsRead($id, NotificationService $notificationService)
     {
-        $notif = Notification::find( $id);
-        if (!$notif->read_at) {
-            $notif->read_at = now();
-            $notif->save();
-            $this->dispatch('notificationRead')->to('sidebar');
-        }
+        $user = Auth::user();
+        $user->notifications()->updateExistingPivot($id, ['read_at' => now()]);
+
+        $this->dispatch('notificationRead')->to('sidebar');
         $this->loadNotifications($notificationService);
     }
 
     public function markAllAsRead(NotificationService $notificationService)
     {
-        $query = Auth::user()->role === 'technician'
-            ? Notification::where('user_id', Auth::id())
-            : Notification::whereJsonContains('visible_to', Auth::user()->role);
-
-        $query->whereNull('read_at')->update(['read_at' => now()]);
+        $user = Auth::user();
+        $user->notifications()->wherePivot('read_at', null)
+            ->update(['notification_users.read_at' => now()]);
 
         $this->dispatch('notificationRead')->to('sidebar');
         $this->loadNotifications($notificationService);

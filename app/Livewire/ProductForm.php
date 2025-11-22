@@ -137,7 +137,6 @@ class ProductForm extends Component
         }
 
         app(NotificationService::class)->createNotif(
-            Auth::user()->id,
             "Product Added Successfully",
             "{$product->name} has been successfully added to your inventory.",
             ['owner', 'cashier', 'admin_officer'],

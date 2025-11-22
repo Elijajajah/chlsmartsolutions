@@ -99,9 +99,8 @@ class OrderController
             );
 
             app(NotificationService::class)->createNotif(
-                Auth::user()->id,
                 "New Order Requested",
-                Auth::user()->fullname . " has requested a new order.",
+                $order->customer_name . " has requested a new order.",
                 ['owner', 'cashier', 'admin_officer'],
             );
         }

@@ -2,31 +2,40 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Models\Notification;
 
 class NotificationService
 {
-    public function createNotif($id, $title, $message, $visible_to)
+    public function createNotif(string $title, string $message, ?array $roles = null, ?int $userId = null)
     {
-        Notification::create([
-            'user_id' => $id,
+        $notification = Notification::create([
             'title' => $title,
             'message' => $message,
-            'visible_to' => $visible_to,
         ]);
+
+        if ($userId) {
+            $notification->users()->attach($userId);
+            return;
+        }
+
+        if ($roles) {
+            $users = User::whereIn('role', $roles)
+                ->where('status', 'active')
+                ->pluck('id');
+            $notification->users()->attach($users);
+        }
     }
 
-    public function getFilteredNotification($id ,$filter, $role)
-    {
-        $query = match ($role) {
-            'technician' => Notification::where('user_id', $id),
-            default => Notification::whereJsonContains('visible_to', $role),
-        };
 
-        if ($filter == 1) {
-            $query->whereNull('read_at');
-        } elseif ($filter == 2) {
-            $query->whereNotNull('read_at');
+    public function getFilteredNotification(int $userId, ?int $filter = null)
+    {
+        $query = User::find($userId)->notifications();
+
+        if ($filter === 1) {
+            $query->wherePivot('read_at', null);
+        } elseif ($filter === 2) {
+            $query->wherePivot('read_at', '!=', null);
         }
 
         return $query->latest()->take(10)->get();
