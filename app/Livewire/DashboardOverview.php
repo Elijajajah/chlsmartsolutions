@@ -23,7 +23,7 @@ class DashboardOverview extends Component
         return Expense::whereBetween('expense_date', [$this->startDate, now()])->sum('amount');
     }
 
-    public function getTotalRevenueProperty()
+    public function getTotalSalesProperty()
     {
         return Order::where('status', 'completed')
             ->whereBetween('updated_at', [$this->startDate, now()])
@@ -42,11 +42,6 @@ class DashboardOverview extends Component
         return User::whereNotIn('role', ['customer', 'owner'])
             ->where('status', 'active')
             ->count();
-    }
-
-    public function getTotalProductProperty()
-    {
-        return Product::count();
     }
 
     public function render()

@@ -30,7 +30,7 @@
                         </svg>
                     </div>
                     <p class="font-medium text-xs mt-3">Total Sales</p>
-                    <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">All-time revenue</p>
+                    <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">All-time sales</p>
                     <h1 class="text-[#FF7555] font-semibold mt-6">₱{{ number_format($this->totalRevenue, 2) }}</h1>
                 </div>
                 <div class="w-[48%] md:w-1/5 flex flex-col items-center justify-center bg-white p-4 rounded-lg">

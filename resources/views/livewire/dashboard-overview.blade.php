@@ -8,12 +8,29 @@
                 <path d="m22 7-8.5 8.5-5-5L2 17" />
             </svg>
         </div>
-        <p class="font-medium text-xs mt-3">Total Sales</p>
-        <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">All-time revenue</p>
-        <h1 class="text-[#FF7555] font-semibold mt-6">₱{{ number_format($this->totalRevenue, 2) }}</h1>
+        <p class="font-medium text-xs mt-3">Total Revenue</p>
+        <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">All-time Revenue</p>
+        <h1 class="text-[#FF7555] font-semibold mt-6">
+            ₱{{ number_format($this->totalSales - $this->totalExpenses, 2) }}</h1>
     </div>
     <div class="w-[48%] md:w-1/5 flex flex-col items-center justify-center bg-white p-4 rounded-lg">
         <div class="rounded-full bg-[#39A1EA] text-white flex justify-center items-center size-13">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-hand-coins-icon lucide-hand-coins">
+                <path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17" />
+                <path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" />
+                <path d="m2 16 6 6" />
+                <circle cx="16" cy="9" r="2.9" />
+                <circle cx="6" cy="5" r="3" />
+            </svg>
+        </div>
+        <p class="font-medium text-xs mt-3">Total Sales</p>
+        <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">All-time sales</p>
+        <h1 class="text-[#39A1EA] font-semibold mt-6">₱{{ number_format($this->totalSales, 2) }}</h1>
+    </div>
+    <div class="w-[48%] md:w-1/5 flex flex-col items-center justify-center bg-white p-4 rounded-lg">
+        <div class="rounded-full bg-[#405089] text-white flex justify-center items-center size-13">
             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 class="lucide lucide-file-text-icon lucide-file-text">
@@ -26,10 +43,10 @@
         </div>
         <p class="font-medium text-xs mt-3">Total Expenses</p>
         <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">All-time expenses</p>
-        <h1 class="text-[#39A1EA] font-semibold mt-6">₱{{ number_format($this->totalExpenses, 2) }}</h1>
+        <h1 class="text-[#405089] font-semibold mt-6">₱{{ number_format($this->totalExpenses, 2) }}</h1>
     </div>
     <div class="w-[48%] md:w-1/5 flex flex-col items-center justify-center bg-white p-4 rounded-lg">
-        <div class="rounded-full bg-[#405089] text-white flex justify-center items-center size-13">
+        <div class="rounded-full bg-[#FEB558] text-white flex justify-center items-center size-13">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 class="lucide lucide-calendar-range-icon lucide-calendar-range">
@@ -45,10 +62,10 @@
         </div>
         <p class="font-medium text-xs mt-3">Total Order</p>
         <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">Completed orders</p>
-        <h1 class="text-[#405089] font-semibold mt-6">{{ $this->order }}</h1>
+        <h1 class="text-[#FEB558] font-semibold mt-6">{{ $this->order }}</h1>
     </div>
-    <div class="w-[48%] md:w-1/5 flex flex-col items-center justify-center bg-white p-4 rounded-lg">
-        <div class="rounded-full bg-[#FEB558] text-white flex justify-center items-center size-13">
+    <div class="hidden md:w-1/5 md:flex flex-col items-center justify-center bg-white p-4 rounded-lg">
+        <div class="rounded-full bg-[#29AB91] text-white flex justify-center items-center size-13">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 class="lucide lucide-circle-user-round-icon lucide-circle-user-round">
@@ -59,22 +76,6 @@
         </div>
         <p class="font-medium text-xs mt-3">Total Staff</p>
         <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">Active employees</p>
-        <h1 class="text-[#FEB558] font-semibold mt-6">{{ $this->staff }}</h1>
-    </div>
-    <div class="hidden md:w-1/5 md:flex flex-col items-center justify-center bg-white p-4 rounded-lg">
-        <div class="rounded-full bg-[#29AB91] text-white flex justify-center items-center size-13">
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="lucide lucide-package-icon lucide-package">
-                <path
-                    d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" />
-                <path d="M12 22V12" />
-                <polyline points="3.29 7 12 12 20.71 7" />
-                <path d="m7.5 4.27 9 5.15" />
-            </svg>
-        </div>
-        <p class="font-medium text-xs mt-3">Total Products</p>
-        <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">All available items</p>
-        <h1 class="text-[#29AB91] font-semibold mt-6">{{ $this->totalProduct }}</h1>
+        <h1 class="text-[#29AB91] font-semibold mt-6">{{ $this->staff }}</h1>
     </div>
 </div>

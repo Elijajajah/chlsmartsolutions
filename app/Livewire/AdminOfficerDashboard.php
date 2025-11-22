@@ -48,10 +48,10 @@ class AdminOfficerDashboard extends Component
             ->count();
     }
 
-    public function getSalesTodayProperty()
+    public function getTotalSalesProperty()
     {
-        return Order::whereDate('updated_at', now())
-            ->where('status', 'completed')
+        return Order::where('status', 'completed')
+            ->whereBetween('updated_at', [$this->startDate, now()])
             ->sum('total_amount');
     }
 
