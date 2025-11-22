@@ -210,7 +210,7 @@
                                 </div>
                                 <div class="w-[15%] pr-4 py-3 flex items-center justify-center gap-2 text-xs">
                                     <button
-                                        @if (auth()->user()->role === 'owner') wire:click="selectOrder({{ $order->id }})" @endif
+                                        @if (auth()->user()->role !== 'owner') wire:click="selectOrder({{ $order->id }})" @endif
                                         class="{{ auth()->user()->role === 'owner' ? 'cursor-not-allowed text-gray-400' : 'cursor-pointer text-[#3B82F6]' }}""
                                         {{ auth()->user()->role === 'owner' ? 'disabled' : '' }}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -277,6 +277,17 @@
                 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
                     <div
                         class="bg-white rounded-xl shadow-lg max-w-[280px] md:max-w-lg gap-6 w-full p-8 relative font-inter flex flex-col items-center justify-center">
+                        <button wire:click="closeModal"
+                            class="absolute top-3 right-3 bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-full shadow-md
+           hover:bg-red-600 hover:scale-110 transition transform duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
+                                <path d="M18 6 6 18" />
+                                <path d="m6 6 12 12" />
+                            </svg>
+                        </button>
+
                         <div class="flex flex-col w-full gap-4 font-poppins">
                             <div class="flex w-full items-center justify-between">
                                 <div class="flex flex-col">
@@ -348,7 +359,7 @@
                                     @endphp
 
                                     <div class="flex items-center w-full">
-                                        <div class="w-[50%]">{{ $product->name }}</div>
+                                        <div class="w-[50%]">{{ ucwords($product->name) }}</div>
                                         <div class="w-[15%] text-center">x{{ $quantity }}</div>
                                         <div class="w-[35%] text-center">
                                             ₱{{ number_format($totalPrice, 2) }}
@@ -364,8 +375,8 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-center w-full gap-4 mt-6">
-                            <button wire:click='updateStatus({{ $selectedOrder->id }})'
+                        <div class="flex items-center justify-center w-full gap-2 mt-6">
+                            <button wire:click="updateStatus({{ $selectedOrder->id }}, 'sold')"
                                 class="cursor-pointer flex gap-2 items-center py-2 px-4 bg-[#16A34A] rounded-md text-white">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -374,9 +385,13 @@
                                     <path d="M21.801 10A10 10 0 1 1 17 3.335" />
                                     <path d="m9 11 3 3L22 4" />
                                 </svg>
-                                <p>Mark as Complete</p>
+                                <p>Complete</p>
                             </button>
-                            <button wire:click='closeModal'
+                            <button wire:click="updateStatus({{ $selectedOrder->id }}, 'reserved')"
+                                class="cursor-pointer flex gap-2 items-center py-2 px-4 bg-blue-600 rounded-md text-white">
+                                <p>Reserve</p>
+                            </button>
+                            <button wire:click="updateStatus({{ $selectedOrder->id }}, 'cancel')"
                                 class="cursor-pointer flex gap-2 items-center py-2 px-4 bg-red-500 rounded-md text-white">
                                 Cancel
                             </button>

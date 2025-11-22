@@ -28,10 +28,10 @@
     <div x-show="open" x-cloak @click.outside="open = false" x-transition
         class="absolute top-18 right-0 p-4 bg-white rounded-md w-38">
         <div class="absolute -top-2 md:-top-2 right-2 md:right-8 w-4 h-4 rotate-45 bg-white flex flex-col"></div>
+        <livewire:customer-history />
         <form method="POST" action="/signout">
             @csrf
-            <button type="submit"
-                class="cursor-pointer flex items-center gap-2 p-2 border-b border-[#DCDCDC] last:border-none">
+            <button type="submit" class="cursor-pointer flex items-center gap-2 p-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-5">
                     <path stroke-linecap="round" stroke-linejoin="round"

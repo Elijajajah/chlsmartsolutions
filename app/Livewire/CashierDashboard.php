@@ -79,7 +79,6 @@ class CashierDashboard extends Component
     public function getOrderTodayProperty()
     {
         return Order::whereDate('created_at', '<=', now())
-            ->whereDate('expiry_date', '>=', now())
             ->where('status', 'pending')
             ->count();
     }

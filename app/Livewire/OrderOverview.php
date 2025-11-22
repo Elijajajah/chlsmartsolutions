@@ -25,7 +25,6 @@ class OrderOverview extends Component
     public function render()
     {
         $order = Order::whereDate('created_at', '<=', now())
-            ->whereDate('expiry_date', '>=', now())
             ->where('status', 'pending')
             ->take($this->take)
             ->get();

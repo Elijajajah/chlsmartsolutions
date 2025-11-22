@@ -9,6 +9,8 @@ use App\Models\ProductSerial;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Validator;
+use App\Mail\OrderConfirmationMail;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController
 {
@@ -56,17 +58,13 @@ class OrderController
                 return redirect()->route('landing.page');
             }
         }
-
-        $expiry = now()->addDays(1)->toDateString();
-        $status = 'pending';
+        // $status = 'pending';
 
         $order = Order::create([
             'user_id' => Auth::user()->id,
             'customer_name' => $customer_name,
             'total_amount' => $request->total_amount,
             'type' => $request->type,
-            'status' => $status,
-            'expiry_date' => $expiry,
         ]);
 
         $referenceId = $this->generateReferenceId(
@@ -87,13 +85,27 @@ class OrderController
             // Attach to order
             $order->productSerials()->attach($serials->pluck('id')->toArray());
             // Mark serials as reserved
-            ProductSerial::whereIn('id', $serials->pluck('id'))
-                ->update(['status' => 'reserved']);
+            // ProductSerial::whereIn('id', $serials->pluck('id'))
+            //     ->update(['status' => 'reserved']);
         }
 
         session()->forget('cartItems');
 
         notyf()->success('Order placed successfully');
+
+        if ($request->type === 'online') {
+            Mail::to(Auth::user()->email)->send(
+                new OrderConfirmationMail($order, $cartItems)
+            );
+
+            app(NotificationService::class)->createNotif(
+                Auth::user()->id,
+                "New Order Requested",
+                Auth::user()->fullname . " has requested a new order.",
+                ['owner', 'cashier', 'admin_officer'],
+            );
+        }
+
         session([
             'showCard' => true,
             'orderId' => $order->id,

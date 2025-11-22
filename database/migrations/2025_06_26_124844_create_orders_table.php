@@ -18,8 +18,7 @@ return new class extends Migration
             $table->string('customer_name');
             $table->decimal('total_amount', 10, 2);
             $table->enum('type', ['government', 'walk_in', 'project_based', 'online']);
-            $table->enum('status', ['pending', 'completed', 'expired'])->default('pending');
-            $table->date('expiry_date');
+            $table->enum('status', ['pending', 'completed', 'canceled', 'reserved'])->default('pending');
             $table->timestamps();
         });
     }

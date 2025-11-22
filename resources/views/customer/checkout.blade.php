@@ -77,6 +77,20 @@
                         <p class="font-semibold">₱{{ number_format($total, 2) }}</p>
                     </div>
                 </div>
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-4 bg-[#F7F7F7] p-4 rounded-md">
+                        <img src="{{ asset('images/customer/gcash-logo.png') }}" alt="GCash" class="w-12 h-12">
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-lg">GCash</span>
+                            <span class="text-gray-600 text-sm">+63 9992264818</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500">
+                        Send your downpayment to reserve your order. After payment, contact us at
+                        <strong>(+63) 9992264818</strong> or email us at
+                        <strong>chldisty888@gmail.com</strong> for confirmation so we can reserve your items for you.
+                    </p>
+                </div>
                 <div class="flex flex-col w-full">
                     <h1 class="font-bold text-lg font-inter">In-store payment</h1>
                     <form method="POST" action="/order">

@@ -9,6 +9,10 @@ use App\Services\OrderService;
 use Livewire\WithoutUrlPagination;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderReservedMail;
+use App\Mail\OrderCanceledMail;
+use App\Mail\OrderCompletedMail;
 
 class OrderBrowser extends Component
 {
@@ -54,9 +58,9 @@ class OrderBrowser extends Component
         return $orderService->countOrder($status);
     }
 
-    public function updateStatus($id)
+    public function updateStatus($id, $status)
     {
-        $order = Order::with('productSerials')->find($id);
+        $order = Order::with('productSerials')->findOrFail($id);
 
         if ($order->status === 'completed') {
             notyf()->error('Order has already been completed.');
@@ -68,20 +72,68 @@ class OrderBrowser extends Component
             return;
         }
 
-        $order->status = 'completed';
-        $order->updated_at = now();
-        $order->save();
+        switch ($status) {
+            case 'sold':
+                // Mark serials as sold
+                $order->productSerials()->update(['status' => 'sold']);
+                // Mark order as completed
+                $order->status = 'completed';
+                $order->updated_at = now();
+                $order->save();
 
-        $order->productSerials()->update(['status' => 'sold']);
+                if ($order->user->role === 'customer') {
+                    Mail::to($order->user->email)->send(new OrderCompletedMail($order));
+                }
 
-        app(NotificationService::class)->createNotif(
-            Auth::user()->id,
-            'Order Completed',
-            "{$order->reference_id} placed by {$order->user->fullname} has been successfully completed.",
-            ['owner', 'cashier', 'admin_officer'],
-        );
+                app(NotificationService::class)->createNotif(
+                    Auth::user()->id,
+                    'Order Completed',
+                    "{$order->reference_id} placed by {$order->user->fullname} has been successfully completed.",
+                    ['owner', 'cashier', 'admin_officer'],
+                );
 
-        notyf()->success('Order has been completed.');
+                notyf()->success('Order has been completed.');
+                break;
+
+            case 'reserved':
+                // Mark serials as reserved, order stays pending
+                $order->productSerials()->update(['status' => 'reserved']);
+                $order->status = 'reserved';
+                $order->updated_at = now();
+                $order->save();
+
+                if ($order->user->role === 'customer') {
+                    Mail::to($order->user->email)->send(new OrderReservedMail($order));
+                }
+
+                notyf()->success('Products have been reserved, order remains pending.');
+                break;
+
+            case 'cancel':
+                // Revert serials to available
+                $order->productSerials()->update(['status' => 'available']);
+                $order->status = 'canceled';
+                $order->updated_at = now();
+                $order->save();
+
+                if ($order->user->role === 'customer') {
+                    Mail::to($order->user->email)->send(new OrderCanceledMail($order));
+                }
+
+                app(NotificationService::class)->createNotif(
+                    Auth::user()->id,
+                    'Order Canceled',
+                    "{$order->reference_id} placed by {$order->user->fullname} has been canceled.",
+                    ['owner', 'cashier', 'admin_officer'],
+                );
+                notyf()->success('Order has been canceled and products are now available.');
+                break;
+
+            default:
+                notyf()->error('Invalid status.');
+                return;
+        }
+
         $this->dispatch('notificationRead')->to('sidebar');
         $this->closeModal();
     }

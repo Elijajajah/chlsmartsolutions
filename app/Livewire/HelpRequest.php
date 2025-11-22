@@ -64,7 +64,6 @@ class HelpRequest extends Component
             'customer_phone' => Auth::user()->phone_number,
             'user_id' => null,
             'status' => 'unassigned',
-            'expiry_date' => null,
         ]);
 
         app(NotificationService::class)->createNotif(

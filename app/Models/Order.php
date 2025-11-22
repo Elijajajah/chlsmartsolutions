@@ -16,7 +16,6 @@ class Order extends Model
         'total_amount',
         'type',
         'status',
-        'expiry_date',
     ];
 
     public function user()

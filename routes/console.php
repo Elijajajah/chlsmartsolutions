@@ -9,5 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:check-task-expiry')->daily();
-Schedule::command('app:check-order-expiry')->daily();
 Schedule::command('cache:clear')->daily();
