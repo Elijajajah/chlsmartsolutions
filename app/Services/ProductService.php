@@ -56,6 +56,9 @@ class ProductService
     {
         // Load products with serials and their related completed orders
         $products = Product::with([
+            'serials' => function ($q) {
+                $q->where('status', 'sold');
+            },
             'serials.orders' => function ($query) {
                 $query->where('status', 'completed');
             },
@@ -90,7 +93,12 @@ class ProductService
 
     public function getProductWithStock($category_id = 0, $search = '')
     {
-        return Product::with(['serials.orders', 'category'])
+        return Product::with(['serials' => function ($q) {
+            $q->where('status', 'available');
+        }, 'category'])
+            ->whereHas('serials', function ($q) {
+                $q->where('status', 'available');
+            })
             ->when($category_id != 0, function ($query) use ($category_id) {
                 $query->where('category_id', $category_id);
             })

@@ -27,7 +27,7 @@ class InventoryOverview extends Component
         $products = Product::with(['serials', 'category'])->get();
 
         $filtered = $products->filter(function ($product) {
-            $availableStock = $product->availableReservedCount();
+            $availableStock = $product->availableCount();
 
             $minStockLimit = $product->min_limit ?? 5;
 
@@ -37,7 +37,7 @@ class InventoryOverview extends Component
 
         // Sort by stock (lowest first)
         $sorted = $filtered->sortBy(function ($product) {
-            return $product->availableReservedCount();
+            return $product->availableCount();
         });
 
         // Return limited list (for dashboard etc.)

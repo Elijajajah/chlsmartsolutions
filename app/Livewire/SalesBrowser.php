@@ -50,7 +50,7 @@ class SalesBrowser extends Component
             ->whereBetween('updated_at', [$this->startDate, now()])
             ->where('status', 'completed')->get();
         $total = 0;
-        foreach($orders as $order){
+        foreach ($orders as $order) {
             $total += $order->total_amount;
         }
         return $total;

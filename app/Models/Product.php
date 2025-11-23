@@ -29,13 +29,6 @@ class Product extends Model
         return $this->hasMany(ProductSerial::class);
     }
 
-    public function availableReservedCount()
-    {
-        return $this->serials()
-            ->whereIn('status', ['available', 'reserved'])
-            ->count();
-    }
-
     public function availableCount()
     {
         return $this->serials()

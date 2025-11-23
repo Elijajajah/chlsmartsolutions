@@ -123,7 +123,7 @@ class ProductBrowser extends Component
         $products = Product::with(['serials', 'category'])->get();
 
         return $products->filter(function ($product) use ($status) {
-            $availableCount = $product->availableReservedCount();
+            $availableCount = $product->availableCount();
 
             if ($status === 'out') {
                 return $availableCount <= 0;
