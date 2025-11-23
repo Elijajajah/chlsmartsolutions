@@ -4,10 +4,13 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use Livewire\Component;
+use App\Http\Controllers\OrderController;
+use Illuminate\Validation\ValidationException;
 
 class OrderList extends Component
 {
     public $products = [];
+    public $type = '', $customer_name = '', $payment_method = 'none', $tax = '';
     protected $listeners = ['addProducts' => 'updateProductsList'];
 
     public function mount()
@@ -97,6 +100,66 @@ class OrderList extends Component
         session()->put('cartItems', $this->products);
     }
 
+    public function increaseQuantity($index)
+    {
+        if (!isset($this->products[$index])) return;
+
+        $product = $this->products[$index];
+
+        // Load product with serials
+        $model = Product::with('serials')->find($product->id);
+        if (!$model) return;
+
+        $availableSerials = $model->serials()
+            ->where('status', 'available')
+            ->pluck('serial_number')
+            ->toArray();
+
+        $currentSerials = $product->serials ?? [];
+        $currentQty = count($currentSerials);
+        $maxStock = count($availableSerials);
+
+        // ❌ If already at max stock, stop
+        if ($currentQty >= $maxStock) {
+            notyf()->error("Only {$maxStock} stocks available for {$product->name}.");
+            return;
+        }
+
+        // Assign a new serial from the remaining serials
+        $remaining = array_diff($availableSerials, $currentSerials);
+        shuffle($remaining);
+
+        $nextSerial = array_shift($remaining);
+        $product->serials[] = $nextSerial;
+
+        $product->quantity = count($product->serials);
+        $this->products[$index] = $product;
+
+        session()->put('cartItems', $this->products);
+    }
+
+    public function decreaseQuantity($index)
+    {
+        if (!isset($this->products[$index])) return;
+
+        $product = $this->products[$index];
+        $currentSerials = $product->serials ?? [];
+
+        // ❌ Don't go below quantity 1
+        if (count($currentSerials) <= 1) {
+            return;
+        }
+
+        // Remove last serial
+        array_pop($currentSerials);
+
+        $product->serials = $currentSerials;
+        $product->quantity = count($currentSerials);
+
+        $this->products[$index] = $product;
+
+        session()->put('cartItems', $this->products);
+    }
 
     public function removeProduct($id)
     {
@@ -123,6 +186,42 @@ class OrderList extends Component
     public function getTotalProductProperty()
     {
         return count($this->products);
+    }
+
+    public function submit()
+    {
+        try {
+            $this->validate([
+                'customer_name'   => 'required|max:100',
+                'type'            => 'required|in:walk_in,project_based,government',
+                'payment_method'  => 'required|not_in:none',
+                'tax'             => 'required_if:type,government|min:0',
+            ], [
+                'customer_name.required' => 'Please insert a customer name.',
+                'type.required' => 'Please select a customer type.',
+                'payment_method.required' => 'Please select a payment method.',
+                'tax.required_if' => 'Tax is required for government customers.',
+                'tax.min' => 'Tax cannot be negative.',
+            ]);
+
+            if (empty(session('cartItems'))) {
+                notyf()->error('Your product list is empty.');
+                return;
+            }
+        } catch (ValidationException $e) {
+            $message = $e->validator->errors()->first();
+            notyf()->error($message);
+            return;
+        }
+
+        return app(OrderController::class)
+            ->createOrder(request()->merge([
+                'customer_name' => $this->customer_name,
+                'type' => $this->type,
+                'payment_method' => $this->payment_method,
+                'tax' => $this->tax,
+                'total_amount' => $this->totalAmount,
+            ]));
     }
 
     public function render()

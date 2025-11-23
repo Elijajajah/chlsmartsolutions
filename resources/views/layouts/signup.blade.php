@@ -110,7 +110,8 @@
             <p class="text-sm mb-4">We sent a 6-digit code to your email.</p>
             <input type="text" id="otpInput" maxlength="6" class="w-full px-3 py-2 border rounded mb-4"
                 placeholder="Enter OTP">
-            <button id="verifyOtpBtn" class="w-full bg-green-600 text-white py-2 rounded font-semibold">Verify
+            <button id="verifyOtpBtn"
+                class="cursor-pointer w-full bg-green-600 text-white py-2 rounded font-semibold">Verify
                 OTP</button>
             <p id="otpError" class="text-red-500 mt-2 text-sm hidden"></p>
         </div>

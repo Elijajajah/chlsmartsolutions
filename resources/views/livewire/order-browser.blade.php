@@ -278,8 +278,8 @@
                     <div
                         class="bg-white rounded-xl shadow-lg max-w-[280px] md:max-w-lg gap-6 w-full p-8 relative font-inter flex flex-col items-center justify-center">
                         <button wire:click="closeModal"
-                            class="absolute top-3 right-3 bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-full shadow-md
-           hover:bg-red-600 hover:scale-110 transition transform duration-200">
+                            class="cursor-pointer absolute top-3 right-3 bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-full shadow-md
+                            hover:bg-red-600 hover:scale-110 transition transform duration-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
@@ -386,6 +386,14 @@
                                 @endforeach
                             </div>
                             <hr class="w-full h-px border-[#BBBBBB] mt-4">
+                            @if ($selectedOrder->tax > 0)
+                                <div class="w-full flex items-center justify-between">
+                                    <p class="text-sm font-semibold">Tax:</p>
+                                    <p class="w-[35%] text-center">
+                                        {{ $selectedOrder->tax }}%
+                                    </p>
+                                </div>
+                            @endif
                             <div class="w-full flex items-center justify-between">
                                 <p class="font-bold">Total:</p>
                                 <p class="w-[35%] text-center">₱{{ number_format($selectedOrder->total_amount, 2) }}
@@ -421,92 +429,23 @@
 
         @if ($activeTab === 'addOrder')
             <div class="flex flex-col gap-6 md:gap-10">
-                <div class="flex flex-col gap-4">
-                    <div class="flex items-center gap-4">
-                        <button wire:click="$set('activeTab', 'orderBrowse')" class="cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                class="lucide lucide-undo2-icon lucide-undo-2">
-                                <path d="M9 14 4 9l5-5" />
-                                <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
-                            </svg>
-                        </button>
-                        <h1 class="font-poppins font-semibold text-lg">Purchase Information</h1>
-                    </div>
-                    <form action="/order" method="POST" id="form"
-                        class="flex flex-col md:flex-row gap-2 md:items-center font-inter md:gap-6">
-                        @csrf
-                        <input type="text" class="hidden" name="total_amount" id="total_amount">
-                        <input type="text" class="hidden" name="payment_method" id="payment_method">
-                        <div class="flex flex-col text-[#4f4f4f] gap-1 w-full md:w-fit">
-                            <p class="text-sm font-medium">Product Name</p>
-                            <input type="text" placeholder="Enter Name..." wire:model.live="customer_name"
-                                id="customer_name" name="customer_name"
-                                class="text-sm md:text-base w-full md:w-fit pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
-                        </div>
-                        <div class="flex flex-col text-[#797979] gap-1">
-                            <p class="text-sm font-medium">Customer Type</p>
-                            <div class="relative">
-                                <select wire:change="$set('type', $event.target.value)"
-                                    class="w-full md:w-[250px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
-                                    name="type" id="type">
-                                    <option selected disabled>Select a type</option>
-                                    <option value="walk_in">Walk-in</option>
-                                    <option value="project_based">Project-based</option>
-                                    <option value="government">Government</option>
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex flex-col text-[#797979] gap-1">
-                            <p class="text-sm font-medium">Current Date</p>
-                            <div class="flex items-center relative text-[#797979]">
-                                <input type="date" disabled value="{{ now()->format('Y-m-d') }}"
-                                    class="w-full md:w-[250px] pr-10 pl-4 py-2 border border-gray-500 rounded-md focus:outline-none" />
-                                <svg class="absolute top-2 right-4" xmlns="http://www.w3.org/2000/svg" width="23"
-                                    height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                    class="lucide lucide-calendar-check-icon lucide-calendar-check">
-                                    <path d="M8 2v4" />
-                                    <path d="M16 2v4" />
-                                    <rect width="18" height="18" x="3" y="4" rx="2" />
-                                    <path d="M3 10h18" />
-                                    <path d="m9 16 2 2 4-4" />
-                                </svg>
-                            </div>
-                        </div>
-                    </form>
+                <div class="flex items-center gap-4">
+                    <button wire:click="$set('activeTab', 'orderBrowse')" class="cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="lucide lucide-undo2-icon lucide-undo-2">
+                            <path d="M9 14 4 9l5-5" />
+                            <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
+                        </svg>
+                    </button>
+                    <h1 class="font-poppins font-semibold text-lg">Purchase Information</h1>
                 </div>
 
-                <div class="flex flex-col gap-6">
-                    <div class="flex flex-col md:flex-row md:items-center gap-4 justify-between">
-                        <h1 class="font-poppins font-semibold text-lg">Create New Order</h1>
-                        <livewire:product-search />
-                    </div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <livewire:product-search />
 
                     <livewire:order-list />
-
-                    <div class="flex items-start justify-end w-full">
-                        <button wire:click="goToCheckout"
-                            class="bg-[#2563EB] text-white rounded-md px-4 py-2 flex items-center gap-2 cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                class="lucide lucide-check-icon lucide-check">
-                                <path d="M20 6 9 17l-5-5" />
-                            </svg>
-                            <p>Create Order</p>
-                        </button>
-                    </div>
                 </div>
-            </div>
         @endif
 
         <livewire:receipt />

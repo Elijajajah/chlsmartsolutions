@@ -2,14 +2,19 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Product;
+use Livewire\Component;
+use Livewire\WithoutUrlPagination;
+use Livewire\WithPagination;
 
 class ProductSearch extends Component
 {
+    use WithPagination, WithoutUrlPagination;
+
     public $query = '';
-    public $results = [];
     public $selected = [];
+
+    protected $paginationTheme = 'tailwind';
 
     public function mount()
     {
@@ -18,47 +23,40 @@ class ProductSearch extends Component
 
     public function updatedQuery()
     {
-        $this->results = Product::where('name', 'like', '%' . $this->query . '%')
-            ->limit(8)
-            ->get();
+        $this->resetPage();
     }
 
     public function selectProduct($id)
     {
-        $product = Product::find($id);
-        if ($product && !collect($this->selected)->pluck('id')->contains($id)) {
-            $this->selected[] = (object)[
+        $product = Product::with('category')->find($id);
+
+        if ($product) {
+            $item = (object)[
                 'id' => $product->id,
                 'name' => $product->name,
+                'category' => $product->category->name,
+                'stock' => $product->availableCount(),
             ];
+
+            $this->selected[] = $item;
+            session()->put('selected_products', $this->selected);
+
+            // Dispatch **only this product**
+            $this->dispatch('addProducts', [$item]);
         }
-
-        session()->put('selected_products', $this->selected);
-
-        $this->query = '';
-        $this->results = [];
     }
 
-    public function removeProduct($id)
-    {
-        foreach ($this->selected as $index => $item) {
-            if ($item->id == $id) {
-                unset($this->selected[$index]);
-            }
-        }
-        session()->put('selected_products', $this->selected);
-    }
 
     public function render()
     {
-        return view('livewire.product-search');
-    }
+        $products = Product::with(['category', 'serials' => fn($q) => $q->where('status', 'available')])
+            ->whereHas('serials', fn($q) => $q->where('status', 'available')) // only products with stock
+            ->when($this->query, fn($q) => $q->where('name', 'like', '%' . $this->query . '%'))
+            ->orderByDesc('created_at')
+            ->paginate(6);
 
-    public function addProducts()
-    {
-        $this->dispatch('addProducts', $this->selected);
-        $this->query = '';
-        $this->selected = [];
-        session()->forget('selected_products');
+        return view('livewire.product-search', [
+            'products' => $products,
+        ]);
     }
 }

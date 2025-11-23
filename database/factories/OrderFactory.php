@@ -24,6 +24,7 @@ class OrderFactory extends Factory
             'type' => $this->faker->randomElement(['government', 'walk_in', 'project_based', 'online']),
             'payment_method' => $this->faker->randomElement(['cheque', 'bank_transfer', 'cash', 'ewallet']),
             'customer_name' => $this->faker->name,
+            'tax' => $this->faker->numberBetween(5, 10),
             'status' => 'completed',
             'created_at' => $this->faker->dateTimeBetween('-1 months', '-1 day'),
             'updated_at' => $this->faker->dateTimeBetween('-3 days', 'now')

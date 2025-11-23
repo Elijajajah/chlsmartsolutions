@@ -32,12 +32,16 @@ class OrderController
         $validator = Validator::make($request->all(), [
             'total_amount' => 'required',
             'type' => 'required',
-            'status' => 'nullable'
+            'customer_name' => 'nullable',
+            'tax' => 'nullable',
+            'payment_method' => 'nullable'
         ], [
             'total_amount.required' => 'Total Amount is required',
             'type.required' => 'Please select a customer type.'
         ]);
 
+        $tax = is_numeric($request->tax) ? $request->tax : 0;
+        $payment_method = $request->payment_method !== null ? $request->payment_method : 'none';
         $customer_name = trim($request->customer_name ?? '') ?: Auth::user()->fullname;
         $cartItems = session()->get('cartItems', []);
 
@@ -58,13 +62,14 @@ class OrderController
                 return redirect()->route('landing.page');
             }
         }
-        // $status = 'pending';
 
         $order = Order::create([
             'user_id' => Auth::user()->id,
             'customer_name' => $customer_name,
-            'total_amount' => $request->total_amount,
+            'total_amount' => $request->total_amount * (1 + $tax / 100),
             'type' => $request->type,
+            'tax' => $tax,
+            'payment_method' => $payment_method,
         ]);
 
         $referenceId = $this->generateReferenceId(
@@ -84,9 +89,6 @@ class OrderController
 
             // Attach to order
             $order->productSerials()->attach($serials->pluck('id')->toArray());
-            // Mark serials as reserved
-            // ProductSerial::whereIn('id', $serials->pluck('id'))
-            //     ->update(['status' => 'reserved']);
         }
 
         session()->forget('cartItems');

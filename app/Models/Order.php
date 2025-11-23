@@ -16,6 +16,7 @@ class Order extends Model
         'total_amount',
         'payment_method',
         'type',
+        'tax',
         'status',
     ];
 

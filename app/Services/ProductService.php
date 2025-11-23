@@ -96,9 +96,6 @@ class ProductService
         return Product::with(['serials' => function ($q) {
             $q->where('status', 'available');
         }, 'category'])
-            ->whereHas('serials', function ($q) {
-                $q->where('status', 'available');
-            })
             ->when($category_id != 0, function ($query) use ($category_id) {
                 $query->where('category_id', $category_id);
             })

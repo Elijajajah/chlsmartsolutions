@@ -23,7 +23,7 @@ class OrderBrowser extends Component
     public $search = '';
     public $selectedOrder = null;
     public $showModal = false;
-    public $type = null, $customer_name = '', $payment_method = 'none';
+    public $payment_method = 'none';
     public string $activeTab = 'orderBrowse';
 
     public function selectOrder($order_id)
@@ -154,34 +154,5 @@ class OrderBrowser extends Component
 
         $this->dispatch('notificationRead')->to('sidebar');
         $this->closeModal();
-    }
-
-    public function goToCheckout()
-    {
-        if (empty(session('cartItems'))) {
-            notyf()->error('Your product list is empty.');
-            return;
-        }
-
-        if (!trim($this->customer_name ?? '')) {
-            notyf()->error('Please select a customer name.');
-            return;
-        }
-
-        if (!$this->type) {
-            notyf()->error('Please select a customer type.');
-            return;
-        }
-
-        $total = 0.0;
-        $products = session()->get('cartItems', []);
-        foreach ($products as $product) {
-            $total += $product->quantity * $product->price;
-        }
-
-        $this->dispatch('submit-form', [
-            'total_amount' => $total,
-            'payment_method' => 'in_store',
-        ]);
     }
 }
