@@ -8,7 +8,7 @@ use Livewire\WithPagination;
 use App\Services\UserService;
 use Livewire\WithoutUrlPagination;
 
-class UserBrowser extends Component
+class StaffBrowser extends Component
 {
     use WithPagination, WithoutUrlPagination;
     public $search = '';
@@ -50,7 +50,7 @@ class UserBrowser extends Component
 
     public function render(UserService $userService)
     {
-        return view('livewire.user-browser', [
+        return view('livewire.staff-browser', [
             'users' => $userService->getStaffs($this->search, $this->selectedRole, $this->selectedStatus),
         ]);
     }
