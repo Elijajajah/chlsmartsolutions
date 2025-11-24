@@ -16,7 +16,8 @@
                 </svg>
             </div>
         </div>
-        <button class="cursor-pointer px-4 py-2 bg-[#203D3F] rounded-md text-white text-sm gap-2 whitespace-nowrap">
+        <button wire:click="exportAll"
+            class="cursor-pointer px-4 py-2 bg-[#203D3F] rounded-md text-white text-sm gap-2 whitespace-nowrap">
             Download Report
         </button>
     </div>

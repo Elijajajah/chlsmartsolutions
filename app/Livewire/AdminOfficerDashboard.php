@@ -59,6 +59,11 @@ class AdminOfficerDashboard extends Component
         return Expense::whereBetween('expense_date', [$this->startDate, now()])->sum('amount');
     }
 
+    public function exportAll()
+    {
+        return redirect()->to(route('export.all', ['startDate' => $this->startDate]));
+    }
+
     public function render()
     {
         return view('livewire.admin-officer-dashboard');

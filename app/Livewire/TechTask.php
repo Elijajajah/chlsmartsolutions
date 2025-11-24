@@ -18,7 +18,6 @@ class TechTask extends Component
 {
     use WithPagination, WithoutUrlPagination, WithFileUploads;
 
-    public $selectedPrio = 'all';
     public $selectedTask = null;
     public $showModal = false;
     public $selectedDate;
@@ -108,7 +107,7 @@ class TechTask extends Component
 
     public function updated($property)
     {
-        if ($property === 'selectedDate' || $property === 'selectedPrio') {
+        if ($property === 'selectedDate') {
             $this->gotoPage(1);
         }
     }
@@ -116,7 +115,7 @@ class TechTask extends Component
 
     public function render(TaskService $taskService)
     {
-        $tasks = $taskService->getTasksByDate(Auth::user()->id, $this->selectedDate, $this->selectedPrio);
+        $tasks = $taskService->getTasksByDate(Auth::user()->id, $this->selectedDate);
         $logs = ActivityLog::where('user_id', Auth::user()->id)->latest()->take(10)->get();
 
         return view('livewire.tech-task', [

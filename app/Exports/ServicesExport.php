@@ -3,12 +3,12 @@
 namespace App\Exports;
 
 use Carbon\Carbon;
-use App\Models\Order;
+use App\Models\Task;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 
-class SalesExport implements FromArray, WithEvents
+class ServicesExport implements FromArray, WithEvents
 {
     protected $startDate;
 
@@ -19,32 +19,36 @@ class SalesExport implements FromArray, WithEvents
 
     public function array(): array
     {
-        // Fetch completed orders within the date range
-        $orders = Order::where('status', 'completed')
+        // Fetch completed tasks within the date range
+        $tasks = Task::with('service.serviceCategory')
+            ->where('status', 'completed')
             ->whereBetween('updated_at', [$this->startDate, now()])
             ->orderBy('updated_at', 'asc')
             ->get();
 
         // Initialize result array with headers
         $result = [
-            ['Date', 'Type', 'Total Amount']
+            ['Customer Name', 'Service', 'Category', 'Type', 'Price', 'Date Completed']
         ];
 
         $grandTotal = 0;
 
-        foreach ($orders as $order) {
-            $amount = (float) $order->total_amount;
-            $grandTotal += $amount;
+        foreach ($tasks as $task) {
+            $price = (float) $task->price;
+            $grandTotal += $price;
 
             $result[] = [
-                Carbon::parse($order->updated_at)->format('Y-m-d'),
-                ucfirst(str_replace('_', ' ', $order->type)),
-                $amount,
+                $task->customer_name,
+                $task->service->service ?? 'N/A',
+                $task->service->serviceCategory->category ?? 'N/A',
+                ucfirst(str_replace('_', ' ', $task->type)),
+                $price,
+                Carbon::parse($task->updated_at)->format('Y-m-d'),
             ];
         }
 
         // Add grand total row
-        $result[] = ['Grand Total', '', $grandTotal];
+        $result[] = ['Grand Total', '', '', '', $grandTotal, ''];
 
         return $result;
     }
@@ -58,7 +62,7 @@ class SalesExport implements FromArray, WithEvents
                 // Lock the sheet
                 $sheet->getProtection()->setSheet(true);
 
-                // Optional: set password
+                // Optional: set a password
                 $sheet->getProtection()->setPassword('mypassword');
 
                 // Optional: restrict sort/insert

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Carbon\Carbon;
 use App\Models\Order;
+use App\Models\Task;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 
@@ -20,13 +21,6 @@ class SalesLineChart extends Component
 
     public function getChartData()
     {
-        $orders = Order::selectRaw('type, DATE(created_at) as date, SUM(total_amount) as total_amount')
-            ->whereBetween('updated_at', [$this->startDate, now()])
-            ->where('status', 'completed')
-            ->groupBy('type', DB::raw('DATE(created_at)'))
-            ->orderBy('date')
-            ->get();
-
         $typeLabels = [
             'walk_in' => 'Walk-In',
             'online' => 'Online',
@@ -34,25 +28,43 @@ class SalesLineChart extends Component
             'project_based' => 'Project-Based',
         ];
 
-        $groupedOrders = $orders->groupBy('type');
+        // Fetch Orders
+        $orders = Order::selectRaw('type, DATE(updated_at) as date, SUM(total_amount) as total')
+            ->where('status', 'completed')
+            ->whereBetween('updated_at', [$this->startDate, now()])
+            ->groupBy('type', DB::raw('DATE(updated_at)'))
+            ->orderBy('date')
+            ->get();
+
+        // Fetch Tasks
+        $tasks = Task::selectRaw('type, DATE(updated_at) as date, SUM(price) as total')
+            ->where('status', 'completed')
+            ->whereBetween('updated_at', [$this->startDate, now()])
+            ->groupBy('type', DB::raw('DATE(updated_at)'))
+            ->orderBy('date')
+            ->get();
+
+        // Merge Orders + Tasks
+        $allData = $orders->concat($tasks);
+
+        $grouped = $allData->groupBy('type');
 
         $series = [];
 
-        foreach ($groupedOrders as $type => $typeOrders) {
-            $data = $typeOrders->map(fn($order) => [
-                'x' => Carbon::parse($order->date)->format('Y-m-d'),
-                'y' => (float) $order->total_amount
+        foreach ($grouped as $type => $items) {
+            $data = $items->map(fn($item) => [
+                'x' => Carbon::parse($item->date)->format('Y-m-d'),
+                'y' => (float) $item->total,
             ])->values()->all();
 
             $series[] = [
                 'name' => $typeLabels[$type] ?? ucfirst($type),
-                'data' => $data
+                'data' => $data,
             ];
         }
 
         return $series;
     }
-
 
     public function render()
     {

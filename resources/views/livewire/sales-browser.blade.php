@@ -16,7 +16,7 @@
                 </svg>
             </div>
         </div>
-        <button wire:click="exportSales"
+        <button wire:click="exportSalesServices"
             class="cursor-pointer px-4 py-2 bg-[#203D3F] rounded-md text-white text-sm gap-2 whitespace-nowrap">
             Download Report
         </button>
@@ -229,5 +229,160 @@
             </nav>
         </div>
     </div>
+    <div class="flex flex-col gap-4 md:gap-2 bg-white rounded-md mb-4 md:mb-0">
+        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 gap-4">
+            <div class="flex font-poppins flex-col">
+                <h1 class="text-lg font-medium">Service Record</h1>
+                <p class="text-xs text-[#B8B8B8]">Complete record of all service transactions</p>
+            </div>
+            <div class="flex flex-wrap items-baseline gap-4">
+                <div class="relative text-[#797979]">
+                    <select wire:change="$set('selectedTaskType', $event.target.value)"
+                        class="w-full md:w-[180px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
+                        name="customer_type" id="customer_type">
+                        <option value="all">All Type</option>
+                        <option value="online">Online</option>
+                        <option value="walk_in">Walk-in</option>
+                        <option value="government">Government</option>
+                        <option value="project_based">Project-Based</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="relative text-[#797979]">
+                    <select wire:change="$set('selectedTaskCategory', $event.target.value)"
+                        class="w-[200px] md:w-[260px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
+                        name="category" id="category">
+                        <option value="0">All Category</option>
+                        @foreach ($serviceCategories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->category }}</option>
+                        @endforeach
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="relative text-[#797979] w-full md:w-[230px]">
+                    <input type="text" wire:input.debounce.300ms="$set('taskSearch', $event.target.value)"
+                        placeholder="Search product..."
+                        class="w-full pr-10 pl-4 py-2  border border-gray-500 rounded-md focus:outline-none" />
 
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w-full overflow-x-auto">
+            <div class="min-w-[1024px] flex flex-col font-inter">
+                <div class="flex items-center bg-[#F9FAFB] text-sm text-[#878787] p-4 border-y border-[#E5E7EB]">
+                    <div class="w-[25%]">CUSTOMER TYPE</div>
+                    <div class="w-[30%]">SERVICE</div>
+                    <div class="w-[25%] text-center">CATEGORY</div>
+                    <div class="w-[25%] text-center">AMOUNT</div>
+                </div>
+                @php
+                    $renderedServices = [];
+                @endphp
+
+                @forelse ($tasks as $task)
+                    @if (in_array($task->service_id, $renderedServices))
+                        @continue
+                    @endif
+
+                    @php
+                        // Get all tasks in current page for this service
+                        $serviceTasks = $tasks->filter(fn($t) => $t->service_id === $task->service_id);
+
+                        // Group by type and sum prices
+                        $grouped = $serviceTasks->groupBy('type')->map(fn($group) => $group->sum('price'))->sortDesc();
+
+                        $topType = $grouped->isNotEmpty() ? $grouped->keys()->first() : 'N/A';
+                        $total = $grouped->isNotEmpty() ? $grouped->first() : 0;
+
+                        $renderedServices[] = $task->service_id;
+                    @endphp
+
+                    <div class="flex items-center text-sm text-[#484848] p-4 border-b border-[#E5E7EB]">
+                        <div class="w-[25%] flex items-center justify-start">
+                            @if ($topType == 'online')
+                                <div class="bg-[#3B82F6] text-white py-2 px-4 rounded-md text-xs">Online</div>
+                            @elseif ($topType == 'walk_in')
+                                <div class="bg-[#22C55E] text-white py-2 px-4 rounded-md text-xs">Walk-in</div>
+                            @elseif ($topType == 'government')
+                                <div class="bg-[#A852EE] text-white py-2 px-4 rounded-md text-xs">Government</div>
+                            @elseif ($topType == 'project_based')
+                                <div class="bg-[#F97316] text-white py-2 px-4 rounded-md text-xs">Project-Based</div>
+                            @else
+                                <div class="bg-[#b8b8b8] text-white py-2 px-4 rounded-md text-xs">N/A</div>
+                            @endif
+                        </div>
+
+                        <div class="w-[30%] capitalize">{{ $task->service->service }}</div>
+                        <div class="w-[25%] truncate text-center capitalize">
+                            {{ $task->service->serviceCategory->category }}</div>
+                        <div class="w-[25%] text-center font-semibold text-black">₱{{ number_format($total, 2) }}
+                        </div>
+                    </div>
+                @empty
+                    <div class="w-full py-8 flex items-center justify-center text-sm text-[#9A9A9A]">
+                        No Completed Tasks found.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+        <div class="w-full flex flex-col md:flex-row gap-2 items-center justify-between h-fit p-4">
+            <p class="">Showing {{ $tasks->firstItem() ?? 0 }} to {{ $tasks->lastItem() }} of
+                {{ $tasks->total() }}
+                entries</p>
+            <nav>
+                <div class="flex items-center -space-x-px h-8">
+                    <button wire:click="previousPage" wire:loading.attr="disabled"
+                        @if ($tasks->onFirstPage()) disabled @endif
+                        class="text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center px-3 h-8 ms-0 leading-tight bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700">
+                        <span class="sr-only">Previous</span>
+                        <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" d="M5 1 1 5l4 4" />
+                        </svg>
+                    </button>
+
+                    @foreach (range(1, $tasks->lastPage()) as $page)
+                        <div wire:click="gotoPage({{ $page }})"
+                            class="flex items-center justify-center px-3 h-8 leading-tight
+                                    {{ $tasks->currentPage() === $page
+                                        ? 'text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700'
+                                        : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 cursor-pointer' }}">
+                            {{ $page }}
+                        </div>
+                    @endforeach
+
+                    <button wire:click="nextPage" wire:loading.attr="disabled"
+                        @if (!$tasks->hasMorePages()) disabled @endif
+                        class="flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700">
+                        <span class="sr-only">Next</span>
+                        <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" d="m1 9 4-4-4-4" />
+                        </svg>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </div>
 </div>

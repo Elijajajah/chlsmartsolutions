@@ -29,12 +29,10 @@ Route::middleware('role:customer,owner,admin_officer,cashier')->group(function (
     Route::post('/order', [OrderController::class, 'createOrder'])->name('create.order');
 });
 
-Route::middleware('role:owner,admin_officer,cashier')->group(function () {
-    Route::get('/export/sales', [CSVExportController::class, 'exportSales'])->name('export.sales');
-});
-
 Route::middleware('role:owner,admin_officer')->group(function () {
     Route::get('/export/expenses', [CSVExportController::class, 'exportExpenses'])->name('export.expenses');
+    Route::get('/export/sales-services', [CSVExportController::class, 'exportSalesAndServices'])->name('export.sales.services');
+    Route::get('/export/all', [CSVExportController::class, 'exportAll'])->name('export.all');
 });
 
 
@@ -46,7 +44,6 @@ Route::middleware('role:customer')->group(function () {
 
 Route::middleware('role:owner')->group(function () {
     Route::get('/owner', [RouteController::class, 'goToOwnerPage'])->name('owner');
-    Route::get('/export/all', [CSVExportController::class, 'exportAll'])->name('export.all');
 });
 
 Route::middleware('role:admin_officer')->group(function () {

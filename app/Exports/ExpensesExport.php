@@ -4,7 +4,6 @@ namespace App\Exports;
 
 use Carbon\Carbon;
 use App\Models\Expense;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -20,88 +19,35 @@ class ExpensesExport implements FromArray, WithEvents
 
     public function array(): array
     {
-        $expenses = Expense::selectRaw('category, DATE(expense_date) as date, SUM(amount) as amount')
-            ->whereBetween('expense_date', [$this->startDate, now()])
-            ->groupBy('category', DB::raw('DATE(expense_date)'))
-            ->orderBy('date')
+        // Fetch all expenses within the date range
+        $expenses = Expense::whereBetween('expense_date', [$this->startDate, now()])
+            ->orderBy('expense_date', 'asc')
             ->get();
 
-        $grouped = [];
-
-        foreach ($expenses as $expense) {
-            $date = Carbon::parse($expense->date)->format('Y-m-d');
-            $category = strtolower($expense->category);
-            $amount = (float) $expense->amount;
-
-            if (!isset($grouped[$date])) {
-                $grouped[$date] = [
-                    'date' => $date,
-                    'monthly dues' => 0,
-                    'employee salary' => 0,
-                    'supplies & materials' => 0,
-                    'miscellaneous' => 0,
-                    'other expenses' => 0,
-                    'total' => 0,
-                ];
-            }
-
-            switch ($category) {
-                case 'monthly dues':
-                    $grouped[$date]['monthly dues'] += $amount;
-                    break;
-                case 'employee salary':
-                    $grouped[$date]['employee salary'] += $amount;
-                    break;
-                case 'supplies & materials':
-                    $grouped[$date]['supplies & materials'] += $amount;
-                    break;
-                case 'miscellaneous':
-                    $grouped[$date]['miscellaneous'] += $amount;
-                    break;
-                case 'other expenses':
-                    $grouped[$date]['other expenses'] += $amount;
-                    break;
-            }
-
-            $grouped[$date]['total'] += $amount;
-        }
-
-        // Header
+        // Initialize result array with headers
         $result = [[
             'Date',
-            'Monthly Dues',
-            'Employee Salary',
-            'Supplies & Materials',
-            'Miscellaneous',
-            'Other Expenses',
-            'Total'
+            'Category',
+            'Description',
+            'Amount'
         ]];
 
-        // Rows
-        foreach (array_values($grouped) as $row) {
+        $grandTotal = 0;
+
+        foreach ($expenses as $expense) {
+            $amount = (float) $expense->amount;
+            $grandTotal += $amount;
+
             $result[] = [
-                $row['date'],
-                $row['monthly dues'],
-                $row['employee salary'],
-                $row['supplies & materials'],
-                $row['miscellaneous'],
-                $row['other expenses'],
-                $row['total'],
+                Carbon::parse($expense->expense_date)->format('Y-m-d'),
+                $expense->category,
+                $expense->description ?? '',
+                $amount,
             ];
         }
 
-        // Grand total
-        $grandTotal = [
-            'Total',
-            collect($grouped)->sum('monthly dues'),
-            collect($grouped)->sum('employee salary'),
-            collect($grouped)->sum('supplies & materials'),
-            collect($grouped)->sum('miscellaneous'),
-            collect($grouped)->sum('other expenses'),
-            collect($grouped)->sum('total'),
-        ];
-
-        $result[] = $grandTotal;
+        // Add grand total row
+        $result[] = ['Grand Total', '', '', $grandTotal];
 
         return $result;
     }
@@ -110,16 +56,15 @@ class ExpensesExport implements FromArray, WithEvents
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-
                 $sheet = $event->sheet->getDelegate();
 
                 // Lock the sheet
                 $sheet->getProtection()->setSheet(true);
 
-                // Optional: password
+                // Optional: set a password
                 $sheet->getProtection()->setPassword('mypassword');
 
-                // Optional: allow selection only
+                // Optional: restrict sort/insert
                 $sheet->getProtection()->setSort(false);
                 $sheet->getProtection()->setInsertRows(false);
             }
