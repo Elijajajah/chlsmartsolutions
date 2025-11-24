@@ -73,11 +73,11 @@
                 <div
                     class="w-full bg-[#E7E7E7] rounded-t-md flex items-center text-center p-2 font-inter text-sm text-[#3A3A3A]">
                     <div class="w-[8%] pl-2"></div>
-                    <div class="w-[27.5%] text-start">Task</div>
-                    <div class="w-[17.5%]">Priority</div>
-                    <div class="w-[17.5%]">Due Date</div>
-                    <div class="w-[17.5%]">Status</div>
-                    <div class="w-[13%]">Actions</div>
+                    <div class="w-[27%] text-start">Task</div>
+                    <div class="w-[20%]">Name</div>
+                    <div class="w-[15%]">Contact</div>
+                    <div class="w-[20%]">Status</div>
+                    <div class="w-[10%]">Actions</div>
                 </div>
                 <div class="w-full flex flex-col border-x border-b border-[#EEF2F5]">
                     @forelse ($tasks as $task)
@@ -89,24 +89,13 @@
                             <div class="w-[27.5%] text-start border-x border-[#EEF2F5] pl-2 py-4.5 h-full capitalize">
                                 {{ $task->service->service }}
                             </div>
-                            <div class="w-[17.5%] py-2 flex items-center justify-center h-full">
-                                @if ($task->priority == 'low')
-                                    <div class="bg-[#0000001A] py-2 px-4 w-fit rounded-full">
-                                        <p class="text-[#9A9A9A] text-[0.6rem] capitalize">{{ $task->priority }}</p>
-                                    </div>
-                                @elseif ($task->priority == 'medium')
-                                    <div class="bg-[#C830C31A] py-2 px-4 w-fit rounded-full">
-                                        <p class="text-[#C31BD2] text-[0.6rem] capitalize">{{ $task->priority }}</p>
-                                    </div>
-                                @else
-                                    <div class="bg-[#DC26261A] py-2 px-4 w-fit rounded-full">
-                                        <p class="text-[#DC2626] text-[0.6rem] capitalize">{{ $task->priority }}</p>
-                                    </div>
-                                @endif
+                            <div class="w-[20%] h-full flex items-center justify-center">
+                                {{ $task->customer_name }}
                             </div>
-                            <div class="w-[17.5%] border-x border-[#EEF2F5] py-4.5 h-full">
-                                {{ \Carbon\Carbon::parse($task->expiry_date)->format('F d, Y') }}</div>
-                            <div class="w-[17.5%] py-2 flex items-center justify-center h-full">
+                            <div class="w-[15%] text-start border-x border-[#EEF2F5] pl-2 py-4.5 h-full capitalize">
+                                {{ $task->customer_phone }}
+                            </div>
+                            <div class="w-[20%] py-2 flex items-center justify-center h-full">
                                 @if ($task->status == 'pending')
                                     <div
                                         class="bg-[#ffeaba] py-2 px-4 w-fit rounded-full text-[#c77a0e] flex gap-1 items-center justify-center">
@@ -147,7 +136,7 @@
 
                             </div>
                             <div
-                                class="w-[13%] border-l border-[#EEF2F5] py-4 pr-2 flex items-center justify-center h-full">
+                                class="w-[10%] border-l border-[#EEF2F5] py-4 pr-2 flex items-center justify-center h-full">
                                 <button wire:click='selectTask({{ $task->id }})'
                                     class="cursor-pointer text-[#3B82F6]">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -268,7 +257,7 @@
     @if ($showModal && $selectedTask)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
             <div
-                class="bg-white rounded-xl shadow-lg max-w-[280px] md:max-w-lg gap-4 w-full p-8 relative font-inter flex flex-col items-center justify-center">
+                class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg w-full p-6 md:p-8 relative font-poppins flex flex-col gap-2 md:gap-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex flex-col w-full gap-4">
                     <div class="flex flex-col font-poppins">
                         <h1 class="font-semibold md:text-xl">Task Details</h1>
@@ -278,71 +267,47 @@
                     <div class="flex flex-col gap-2">
                         <p class="font-poppins font-semibold capitalize text-sm md:text-base">
                             {{ $selectedTask->title }}</p>
-                        <div class="flex items-center gap-4">
-                            @if ($selectedTask->priority == 'low')
-                                <div class="bg-[#0000001A] py-1 md:py-2 px-4 w-fit rounded-full">
-                                    <p class="text-[#9A9A9A] text-[0.6rem] capitalize">{{ $selectedTask->priority }}
-                                    </p>
-                                </div>
-                            @elseif ($selectedTask->priority == 'medium')
-                                <div class="bg-[#C830C31A] py-1 md:py-2 px-4 w-fit rounded-full">
-                                    <p class="text-[#C31BD2] text-[0.6rem] capitalize">{{ $selectedTask->priority }}
-                                    </p>
-                                </div>
-                            @else
-                                <div class="bg-[#DC26261A] py-1 md:py-2 px-4 w-fit rounded-full">
-                                    <p class="text-[#DC2626] text-[0.6rem] capitalize">{{ $selectedTask->priority }}
-                                    </p>
-                                </div>
-                            @endif
-
-                            @if ($selectedTask->status == 'pending')
-                                <div
-                                    class="bg-[#ffeaba] py-1 md:py-2 px-4 w-fit rounded-full text-[#c77a0e] flex gap-1 items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round"
-                                        class="lucide lucide-ellipsis-icon lucide-ellipsis">
-                                        <circle cx="12" cy="12" r="1" />
-                                        <circle cx="19" cy="12" r="1" />
-                                        <circle cx="5" cy="12" r="1" />
-                                    </svg>
-                                    <p class="text-[0.6rem] capitalize">{{ $selectedTask->status }}</p>
-                                </div>
-                            @elseif ($selectedTask->status == 'completed')
-                                <div
-                                    class="bg-[#c1eacad7] py-1 md:py-2 px-4 w-fit rounded-full text-[#16A34A] flex gap-1 items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round"
-                                        class="lucide lucide-check-icon lucide-check">
-                                        <path d="M20 6 9 17l-5-5" />
-                                    </svg>
-                                    <p class="text-[0.6rem] capitalize">{{ $selectedTask->status }}</p>
-                                </div>
-                            @else
-                                <div
-                                    class="bg-[#dc262633] py-1 md:py-2 px-4 w-fit rounded-full text-[#DC2626] flex gap-1 items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round"
-                                        class="lucide lucide-x-icon lucide-x">
-                                        <path d="M18 6 6 18" />
-                                        <path d="m6 6 12 12" />
-                                    </svg>
-                                    <p class="text-[0.6rem] capitalize">{{ $selectedTask->status }}</p>
-                                </div>
-                            @endif
-                        </div>
+                        @if ($selectedTask->status == 'pending')
+                            <div
+                                class="bg-[#ffeaba] py-1 md:py-2 px-4 w-fit rounded-full text-[#c77a0e] flex gap-1 items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    class="lucide lucide-ellipsis-icon lucide-ellipsis">
+                                    <circle cx="12" cy="12" r="1" />
+                                    <circle cx="19" cy="12" r="1" />
+                                    <circle cx="5" cy="12" r="1" />
+                                </svg>
+                                <p class="text-[0.6rem] capitalize">{{ $selectedTask->status }}</p>
+                            </div>
+                        @elseif ($selectedTask->status == 'completed')
+                            <div
+                                class="bg-[#c1eacad7] py-1 md:py-2 px-4 w-fit rounded-full text-[#16A34A] flex gap-1 items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    class="lucide lucide-check-icon lucide-check">
+                                    <path d="M20 6 9 17l-5-5" />
+                                </svg>
+                                <p class="text-[0.6rem] capitalize">{{ $selectedTask->status }}</p>
+                            </div>
+                        @else
+                            <div
+                                class="bg-[#dc262633] py-1 md:py-2 px-4 w-fit rounded-full text-[#DC2626] flex gap-1 items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    class="lucide lucide-x-icon lucide-x">
+                                    <path d="M18 6 6 18" />
+                                    <path d="m6 6 12 12" />
+                                </svg>
+                                <p class="text-[0.6rem] capitalize">{{ $selectedTask->status }}</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="flex flex-col w-full">
                     <div class="flex flex-col md:flex-row gap-4 md:justify-between">
-                        <div class="flex flex-col gap-1 md:gap-2">
-                            <p class="font-medium text-xs md:text-sm">Due Date:</p>
-                            <p class="text-[0.6rem] md:text-xs text-[#747474]">
-                                {{ \Carbon\Carbon::parse($selectedTask->expiry_date)->format('F d, Y') }}</p>
-                        </div>
                         <div class="flex flex-col gap-1 md:gap-2">
                             <p class="font-medium text-xs md:text-sm">Customer Information</p>
                             <div class="flex items-center gap-2 text-[#747474]">
@@ -369,6 +334,7 @@
                         </div>
                     </div>
                 </div>
+
                 @if (!empty($selectedTask->description))
                     <div class="flex flex-col w-full gap-2">
                         <p class="font-semibold text-xs md:text-sm">Description:</p>

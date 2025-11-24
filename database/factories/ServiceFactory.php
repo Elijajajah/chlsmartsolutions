@@ -18,7 +18,6 @@ class ServiceFactory extends Factory
         return [
             'service_category_id' => null,
             'service' => 'Default',
-            'price' => fake()->randomFloat(2, 100, 3000),
         ];
     }
 
@@ -73,7 +72,6 @@ class ServiceFactory extends Factory
                 Service::create([
                     'service_category_id' => $category->id,
                     'service' => $serviceName,
-                    'price' => $faker->randomFloat(2, 100, 3000),
                 ]);
             }
         }

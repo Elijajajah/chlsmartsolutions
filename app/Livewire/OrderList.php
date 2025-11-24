@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 class OrderList extends Component
 {
     public $products = [];
-    public $type = '', $customer_name = '', $payment_method = 'none', $tax = '';
+    public $type = '', $customer_name = '', $payment_method = 'none', $tax = '', $price = '', $total_amount = '';
     protected $listeners = ['addProducts' => 'updateProductsList'];
 
     public function mount()
@@ -177,15 +177,28 @@ class OrderList extends Component
 
     public function getTotalAmountProperty()
     {
-        return collect($this->products)->sum(function ($item) {
+        $total = collect($this->products)->sum(function ($item) {
             $quantity = isset($item->serials) ? count($item->serials) : ($item->quantity ?? 1);
             return $quantity * $item->price;
         });
+
+        if ($this->tax !== '' && is_numeric($this->tax)) {
+            $tax = floatval($this->tax);
+            $total = $total * (1 + $tax / 100);
+        }
+
+        return $total;
     }
 
     public function getTotalProductProperty()
     {
         return count($this->products);
+    }
+
+    public function updatedType($value)
+    {
+        $this->tax = '';
+        $this->total_amount = $this->price;
     }
 
     public function submit()
@@ -195,13 +208,13 @@ class OrderList extends Component
                 'customer_name'   => 'required|max:100',
                 'type'            => 'required|in:walk_in,project_based,government',
                 'payment_method'  => 'required|not_in:none',
-                'tax'             => 'required_if:type,government|min:0',
+                'tax' => 'required_if:type,government|numeric|min:1',
             ], [
                 'customer_name.required' => 'Please insert a customer name.',
                 'type.required' => 'Please select a customer type.',
                 'payment_method.required' => 'Please select a payment method.',
                 'tax.required_if' => 'Tax is required for government customers.',
-                'tax.min' => 'Tax cannot be negative.',
+                'tax.min' => 'Tax cannot be less than 1.',
             ]);
 
             if (empty(session('cartItems'))) {

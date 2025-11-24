@@ -18,14 +18,16 @@ class TaskFactory extends Factory
     public function definition(): array
     {
         return [
-            'service_id' => ServiceCategory::inRandomOrder()->value('id'),
-            'priority' => $this->faker->randomElement(['low', 'medium', 'high']),
-            'description' => $this->faker->paragraph(),
-            'customer_name' => $this->faker->name(),
-            'customer_phone' => $this->faker->unique()->numerify('9#########'),
-            'status' => $this->faker->randomElement(['pending', 'completed', 'missed', 'unassigned', 'overdue']),
             'user_id' => 4,
-            'expiry_date' => $this->faker->dateTimeBetween('now', '+1 month')->format('Y-m-d'),
+            'service_id' => ServiceCategory::inRandomOrder()->value('id'),
+            'customer_name' => $this->faker->name,
+            'customer_phone' => $this->faker->unique()->numerify('9#########'),
+            'description' => $this->faker->paragraph(),
+            'type' => $this->faker->randomElement(['government', 'walk_in', 'project_based', 'online']),
+            'tax' => $this->faker->numberBetween(5, 10),
+            'price' => fake()->randomFloat(2, 100, 3000),
+            'payment_method' => $this->faker->randomElement(['cheque', 'bank_transfer', 'cash', 'ewallet']),
+            'status' => $this->faker->randomElement(['pending', 'completed', 'canceled', 'unassigned']),
         ];
     }
 }

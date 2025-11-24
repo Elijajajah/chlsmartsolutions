@@ -42,7 +42,7 @@
                     <!-- Main Card -->
                     <div class="flex items-center justify-between bg-white rounded-2xl p-4 relative z-10">
                         <div>
-                            <h3 class="text-xl font-semibold">{{ $category->category }}</h3>
+                            <h3 class="text-2xl font-semibold">{{ $category->category }}</h3>
                             <p class="text-gray-500 text-sm">{{ $category->services->count() }} services available</p>
                         </div>
 
@@ -81,8 +81,7 @@
                                     </div>
 
                                     <div>
-                                        <h3 class="font-medium">{{ $service->service }}</h3>
-                                        <p class="text-gray-500 text-sm">₱{{ number_format($service->price, 2) }}</p>
+                                        <h3 class="font-medium text-lg">{{ $service->service }}</h3>
                                     </div>
                                 </div>
                                 <button wire:click="selectService({{ $category->id }}, {{ $service->id }})"
@@ -146,28 +145,6 @@
 
                 <!-- Form Fields -->
                 <div class="space-y-5">
-                    <!-- Priority -->
-                    <div>
-                        <label class="block text-sm text-gray-700 mb-1">Priority</label>
-                        <div class="relative w-full">
-                            <select wire:model.live="priority"
-                                class="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-[#203D3F] focus:border-transparent">
-                                <option disabled selected value="">Select priority</option>
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                            </select>
-                            <div
-                                class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
                     <div>
                         <label class="block text-sm text-gray-700 mb-1">Additional details</label>
                         <textarea rows="4" placeholder="Enter your comments or details..." wire:model.live="description"

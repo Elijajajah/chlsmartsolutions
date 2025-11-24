@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('service_category_id')->constrained()->cascadeOnDelete();
             $table->string('service');
-            $table->decimal('price', 12, 2)->default(0);
             $table->timestamps();
         });
     }

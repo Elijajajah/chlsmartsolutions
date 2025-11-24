@@ -19,15 +19,15 @@ class TaskBrowser extends Component
 {
     use WithPagination, WithoutUrlPagination;
     public $selectedStatus = 'all';
-    public $selectedPrio = 'all';
+    public $selectedDate = 'today';
     public $searchCat = '';
     public $selectedCategory = 'all';
     public $filteredServices = [];
-    public $showAddTask = false, $newAddTechnician = '', $newAddCategory = '', $newAddService = '', $newAddPriority = '', $newAddDue = '', $newAddFullName = '', $newAddPhoneNumber = '', $newAddDescription = '';
-    public $showEditTask = false, $editTaskId = null, $newEditTechnician = '', $newEditCategory = '', $newEditService = '', $newEditPriority = '', $newEditDue = '', $newEditFullName = '', $newEditPhoneNumber = '', $newEditDescription = '';
+    public $showAddTask = false, $newAddTechnician = '', $newAddCategory = '', $newAddService = '', $newAddType = '', $newAddPaymentMethod = '', $newAddTax = '', $newAddFullName = '', $newAddPhoneNumber = '', $newAddDescription = '', $newAddPrice = '';
+    public $showEditTask = false, $editTaskId = null, $newEditTechnician = '', $newEditCategory = '', $newEditService = '', $newEditType = '', $newEditPaymentMethod = '', $newEditTax = '', $newEditFullName = '', $newEditPhoneNumber = '', $newEditDescription = '', $newEditPrice = '', $newEditTotalPrice = '';
     public $catName = '', $newCatName = '', $catEditingId = null;
-    public $searchService = '', $showAddModal = false, $newServiceName = '', $newCategory = '', $newAmount = 0.00;
-    public $showEditModal = false, $editServiceId = null, $editServiceName = '', $editServiceCategory = '', $editAmount = 0;
+    public $searchService = '', $showAddModal = false, $newServiceName = '', $newCategory = '';
+    public $showEditModal = false, $editServiceId = null, $editServiceName = '', $editServiceCategory = '';
     public $images = [];
     public string $activeTab = 'taskBrowse';
     public $previewImage = null;
@@ -44,7 +44,7 @@ class TaskBrowser extends Component
 
     public function closeAddTask()
     {
-        $this->reset(['newAddTechnician', 'filteredServices', 'newAddCategory', 'newAddService', 'newAddPriority', 'newAddDue', 'newAddFullName', 'newAddPhoneNumber', 'newAddDescription']);
+        $this->reset(['newAddTechnician', 'filteredServices', 'newAddCategory', 'newAddService', 'newAddType', 'newAddTax', 'newAddPaymentMethod', 'newAddFullName', 'newAddPhoneNumber', 'newAddDescription',]);
         $this->showAddTask = false;
     }
 
@@ -63,10 +63,13 @@ class TaskBrowser extends Component
         $this->newEditCategory = optional($task->service)->service_category_id;
         $this->updatedNewEditCategory($this->newEditCategory);
         $this->newEditService = $task->service_id;
-        $this->newEditPriority = $task->priority;
-        $this->newEditDue = $task->expiry_date ?? '';
         $this->newEditFullName = $task->customer_name;
         $this->newEditPhoneNumber = $task->customer_phone;
+        $this->newEditType = $task->type;
+        $this->newEditPaymentMethod = $task->payment_method;
+        $this->newEditTax = $task->tax;
+        $this->newEditTotalPrice = $task->price;
+        $this->newEditPrice = round($this->newEditTotalPrice / (1 + $this->newEditTax / 100), 2);
         $this->newEditDescription = $task->description;
         $this->showEditTask = true;
     }
@@ -78,10 +81,12 @@ class TaskBrowser extends Component
                 'newEditTechnician' => 'required|exists:users,id',
                 'newEditCategory' => 'required|exists:service_categories,id',
                 'newEditService' => 'required|exists:services,id',
-                'newEditPriority' => 'required|in:low,medium,high',
-                'newEditDue' => 'required|date|after_or_equal:today',
                 'newEditFullName' => 'required|string|max:255',
                 'newEditPhoneNumber' => 'required|regex:/^9[0-9]{9}$/',
+                'newEditType' => 'required|in:walk_in,project_based,government',
+                'newEditPaymentMethod' => 'required|in:cheque,bank_transfer,ewallet,cash',
+                'newEditTax' => 'required_if:newEditType,government|numeric|min:1',
+                'newEditPrice' => 'required|min:0',
                 'newEditDescription' => 'nullable|string',
             ], [
                 'newEditTechnician.required' => 'Please select a technician.',
@@ -90,17 +95,21 @@ class TaskBrowser extends Component
                 'newEditCategory.exists' => 'The selected category is invalid.',
                 'newEditService.required' => 'Please select a service.',
                 'newEditService.exists' => 'The selected service is invalid.',
-                'newEditPriority.required' => 'Please select a priority level.',
-                'newEditPriority.in' => 'The selected priority is invalid.',
-                'newEditDue.required' => 'Please set a due date.',
-                'newEditDue.after_or_equal' => 'The due date cannot be earlier than today.',
+                'newEditType.required' => 'Please select a service type.',
+                'newEditType.in' => 'The selected service type is invalid.',
+                'newEditPaymentMethod.required' => 'Please select a payment method.',
+                'newEditPaymentMethod.in' => 'The selected payment method is invalid.',
+                'newEditTax.required_if' => 'Tax is required for government customers.',
+                'newEditTax.min' => 'Tax cannot be less than 1.',
+                'newEditPrice.required' => 'Price is required.',
+                'newEditPrice.min' => 'Price cannot be negative.',
                 'newEditFullName.required' => 'Customer full name is required.',
                 'newEditPhoneNumber.required' => 'Customer phone number is required.',
                 'newEditPhoneNumber.regex' => 'Customer phone must start with 9 and contain exactly 10 digits (e.g., 9123456789).',
+                'newAddTax.required_if' => 'Tax is required for government customers.',
             ]);
         } catch (ValidationException $e) {
-            $message = $e->validator->errors()->first();
-            notyf()->error($message);
+            notyf()->error($e->validator->errors()->first());
             return;
         }
 
@@ -111,68 +120,109 @@ class TaskBrowser extends Component
             return;
         }
 
-        // Create technician notification (last)
-        if ($this->newEditTechnician) {
-            app(NotificationService::class)->createNotif(
-                "Task Reassigned",
-                'The task for "' . Str::title(optional($task->service)->service ?? 'Unknown Service') . '" has been reassigned to you. Please check your task list for details.',
-                null,
-                $task->user_id
-            );
-        }
+        // Store old technician for comparison
+        $oldTechnician = $task->user_id;
+        $newTechnician = $this->newEditTechnician;
 
+        // Update the task
         $task->update([
-            'user_id' => $this->newEditTechnician,
+            'user_id' => $newTechnician,
             'service_id' => $this->newEditService,
-            'priority' => $this->newEditPriority,
-            'expiry_date' => $this->newEditDue,
             'customer_name' => $this->newEditFullName,
             'customer_phone' => $this->newEditPhoneNumber,
             'description' => $this->newEditDescription,
+            'type' => $this->newEditType,
+            'payment_method' => $this->newEditPaymentMethod,
+            'tax' => $this->newEditTax ?: 0,
+            'price' => floatval($this->newEditPrice) * (1 + floatval($this->newEditTax ?: 0) / 100),
             'status' => 'pending',
         ]);
 
-        // Create technician notification (if assigned)
-        if ($this->newEditTechnician) {
-            app(NotificationService::class)->createNotif(
-                "New Task Assigned",
-                'A new task for "' . Str::title(optional($task->service)->service ?? 'Unknown Service') . '" has been assigned to you. Please check your task list for details.',
-                null,
-                $this->newEditTechnician
-            );
+        // Notifications only if technician changed
+        if ($oldTechnician !== $newTechnician) {
+
+            // Notify the old technician
+            if ($oldTechnician) {
+                app(NotificationService::class)->createNotif(
+                    "Task Reassigned",
+                    'A task for "' . Str::title(optional($task->service)->service ?? 'Unknown Service') . '" has been reassigned to another technician.',
+                    null,
+                    $oldTechnician
+                );
+            }
+
+            // Notify the new technician
+            if ($newTechnician) {
+                app(NotificationService::class)->createNotif(
+                    "New Task Assigned",
+                    'A new task for "' . Str::title(optional($task->service)->service ?? 'Unknown Service') . '" has been assigned to you. Please check your task list.',
+                    null,
+                    $newTechnician
+                );
+            }
         }
 
         notyf()->success('Task updated successfully.');
         $this->closeEditTask();
     }
 
+    public function updatedNewEditPrice()
+    {
+        $this->updateTotalPrice();
+    }
+
+    public function updatedNewEditTax()
+    {
+        $this->updateTotalPrice();
+    }
+
+    public function updatedNewEditType()
+    {
+        $this->newEditTax = 0;
+        $this->updateTotalPrice();
+    }
+
+    public function updateTotalPrice()
+    {
+        $this->newEditTotalPrice = floatval($this->newEditPrice) * (1 + floatval($this->newEditTax ?: 0) / 100);
+    }
 
     public function createTask()
     {
         try {
-            $this->validate([
-                'newAddTechnician' => 'nullable|exists:users,id',
-                'newAddCategory' => 'required|exists:service_categories,id',
-                'newAddService' => 'required|exists:services,id',
-                'newAddPriority' => 'required|in:low,medium,high',
-                'newAddDue' => 'required|date|after_or_equal:today',
-                'newAddFullName' => 'required|string|max:255',
-                'newAddPhoneNumber' => 'required|regex:/^9[0-9]{9}$/',
-                'newAddDescription' => 'nullable|string',
-            ], [
-                'newAddTechnician.exists' => 'The selected technician is invalid or does not exist.',
-                'newAddCategory.required' => 'Please select a service category.',
-                'newAddCategory.exists' => 'The selected category is invalid.',
-                'newAddService.required' => 'Please select a service.',
-                'newAddService.exists' => 'The selected service is invalid.',
-                'newAddPriority.required' => 'Please select a priority level.',
-                'newAddPriority.in' => 'The selected priority is invalid.',
-                'newAddDue.required' => 'Please set a due date.',
-                'newAddDue.after_or_equal' => 'The due date cannot be earlier than today.',
-                'newAddFullName.required' => 'Customer full name is required.',
-                'newAddPhoneNumber.required' => 'Customer phone number is required.',
-                'newAddPhoneNumber.regex' => 'Customer phone must start with 9 and contain exactly 10 digits (e.g., 9123456789).',
-            ]);
+            $this->validate(
+                [
+                    'newAddTechnician' => 'nullable|exists:users,id',
+                    'newAddCategory' => 'required|exists:service_categories,id',
+                    'newAddService' => 'required|exists:services,id',
+                    'newAddType' => 'required|in:walk_in,project_based,government',
+                    'newAddPaymentMethod' => 'required|in:cheque,bank_transfer,ewallet,cash',
+                    'newAddTax' => 'required_if:newAddType,government|numeric|min:1',
+                    'newAddPrice' => 'required|min:0',
+                    'newAddFullName' => 'required|string|max:255',
+                    'newAddPhoneNumber' => 'required|regex:/^9[0-9]{9}$/',
+                    'newAddDescription' => 'nullable|string',
+                ],
+                [
+                    'newAddTechnician.exists' => 'The selected technician is invalid or does not exist.',
+                    'newAddCategory.required' => 'Please select a service category.',
+                    'newAddCategory.exists' => 'The selected service category is invalid.',
+                    'newAddService.required' => 'Please select a service.',
+                    'newAddService.exists' => 'The selected service is invalid.',
+                    'newAddType.required' => 'Please select a service type.',
+                    'newAddType.in' => 'The selected service type is invalid.',
+                    'newAddPaymentMethod.required' => 'Please select a payment method.',
+                    'newAddPaymentMethod.in' => 'The selected payment method is invalid.',
+                    'newAddTax.required_if' => 'Tax is required for government customers.',
+                    'newAddTax.min' => 'Tax cannot be less than 1.',
+                    'newAddPrice.required' => 'Price is required.',
+                    'newAddPrice.min' => 'Price cannot be negative.',
+                    'newAddFullName.required' => 'Customer full name is required.',
+                    'newAddFullName.max' => 'Customer full name must not exceed 255 characters.',
+                    'newAddPhoneNumber.required' => 'Customer phone number is required.',
+                    'newAddPhoneNumber.regex' => 'Phone number must start with 9 and contain exactly 10 digits (e.g., 9123456789).',
+                ]
+            );
         } catch (ValidationException $e) {
             $message = $e->validator->errors()->first();
             notyf()->error($message);
@@ -185,13 +235,15 @@ class TaskBrowser extends Component
         // Create task
         $task = Task::create([
             'service_id' => $this->newAddService,
-            'priority' => $this->newAddPriority,
             'description' => $this->newAddDescription,
             'customer_name' => $this->newAddFullName,
             'customer_phone' => $this->newAddPhoneNumber,
+            'type' => $this->newAddType,
+            'tax' => $this->newAddTax ?: 0,
+            'payment_method' => $this->newAddPaymentMethod,
+            'price' => floatval($this->newAddPrice) * (1 + floatval($this->newAddTax ?: 0) / 100),
             'user_id' => $this->newAddTechnician ?: null,
             'status' => $status,
-            'expiry_date' => $this->newAddDue,
         ]);
 
         // Create technician notification (if assigned)
@@ -262,13 +314,10 @@ class TaskBrowser extends Component
             $this->validate([
                 'newServiceName' => 'required|string',
                 'newCategory' => 'required|exists:service_categories,id',
-                'newAmount' => 'required|min:0',
             ], [
                 'newServiceName.required' => 'Category name is required.',
                 'newCategory.required' => 'Service category is required.',
                 'newCategory.exists' => 'Selected service category does not exist.',
-                'newAmount.required' => 'Price is required.',
-                'newAmount.min' => 'Price must be at least 0.',
             ]);
         } catch (ValidationException $e) {
             $message = $e->validator->errors()->first();
@@ -279,7 +328,6 @@ class TaskBrowser extends Component
         Service::create([
             'service' => $this->newServiceName,
             'service_category_id' => $this->newCategory,
-            'price' => $this->newAmount,
         ]);
 
         notyf()->success('Service created successfully.');
@@ -292,7 +340,6 @@ class TaskBrowser extends Component
         $this->editServiceId = $service;
         $this->editServiceName = $service->service;
         $this->editServiceCategory = $service->service_category_id;
-        $this->editAmount = $service->price;
         $this->showEditModal = true;
     }
 
@@ -302,13 +349,10 @@ class TaskBrowser extends Component
             $this->validate([
                 'editServiceName' => 'required|string',
                 'editServiceCategory' => 'required|exists:service_categories,id',
-                'editAmount' => 'required|min:0',
             ], [
                 'editServiceName.required' => 'Category name is required.',
                 'editServiceCategory.required' => 'Service category is required.',
                 'editServiceCategory.exists' => 'Selected service category does not exist.',
-                'editAmount.required' => 'Price is required.',
-                'editAmount.min' => 'Price must be at least 0.',
             ]);
         } catch (ValidationException $e) {
             $message = $e->validator->errors()->first();
@@ -319,7 +363,6 @@ class TaskBrowser extends Component
         $service->update([
             'service' => $this->editServiceName,
             'service_category_id' => $this->editServiceCategory,
-            'price' => $this->editAmount,
         ]);
 
         notyf()->success('Service saved successfully.');
@@ -362,7 +405,7 @@ class TaskBrowser extends Component
 
     public function render(TaskService $taskService, UserService $userService)
     {
-        $tasks =  $taskService->getFilteredTask($this->selectedStatus, $this->selectedPrio);
+        $tasks =  $taskService->getFilteredTask($this->selectedStatus, $this->selectedDate);
         $taskCount = Task::count();
         $allserviceCategories = ServiceCategory::all();
         $allService = Service::all();

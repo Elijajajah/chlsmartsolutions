@@ -211,12 +211,12 @@
                                 <div class="w-[15%] pr-4 py-3 flex items-center justify-center gap-2 text-xs">
                                     <button
                                         @if (auth()->user()->role !== 'owner') wire:click="selectOrder({{ $order->id }})" @endif
-                                        class="{{ auth()->user()->role === 'owner' ? 'cursor-not-allowed text-gray-400' : 'cursor-pointer text-[#3B82F6]' }}""
-                                        {{ auth()->user()->role === 'owner' ? 'disabled' : '' }}>
+                                        class="{{ auth()->user()->role === 'owner' ? 'cursor-not-allowed text-gray-400' : 'cursor-pointer text-[#3B82F6]' }}"
+                                        @disabled(auth()->user()->role === 'owner')>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                            class="lucide lucide-square-pen-icon lucide-square-pen">
+                                            class="lucide lucide-square-pen">
                                             <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                                             <path
                                                 d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
@@ -339,23 +339,52 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="relative text-[#797979] mr-auto">
-                            <select wire:model.live="payment_method" @if ($selectedOrder->status !== 'pending') disabled @endif
-                                class="w-[200px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
-                                name="status" id="status">
-                                <option value="none">Payment Method</option>
-                                <option value="cheque">Cheque</option>
-                                <option value="bank_transfer">Bank Transfer</option>
-                                <option value="ewallet">E-Wallet</option>
-                                <option value="cash">Cash</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
-                                        clip-rule="evenodd" />
-                                </svg>
+                        <div class="flex flex-col gap-2 w-full">
+                            <div class="flex flex-col md:flex-row justify-start w-full md:gap-4">
+                                <div class="relative text-[#797979] w-full">
+                                    <select wire:model.live="type"
+                                        class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
+                                        name="type" id="type">
+                                        <option value="" disabled>Select a type</option>
+                                        <option value="online">Online</option>
+                                        <option value="walk_in">Walk-in</option>
+                                        <option value="project_based">Project-based</option>
+                                        <option value="government">Government</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <div class="relative text-[#797979] w-full">
+                                    <select wire:model.live="payment_method"
+                                        @if ($selectedOrder->status !== 'pending') disabled @endif
+                                        class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none"
+                                        name="status" id="status">
+                                        <option value="none">Payment Method</option>
+                                        <option value="cheque">Cheque</option>
+                                        <option value="bank_transfer">Bank Transfer</option>
+                                        <option value="ewallet">E-Wallet</option>
+                                        <option value="cash">Cash</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
+                            @if ($type === 'government')
+                                <input type="number" placeholder="Enter Tax..." wire:model.live="tax"
+                                    id="tax" name="tax"
+                                    class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                            @endif
                         </div>
                         <div class="flex flex-col gap-2 w-full">
                             <h1 class="font-medium">Order items({{ count($selectedOrder->productSerials) }})</h1>
@@ -386,17 +415,17 @@
                                 @endforeach
                             </div>
                             <hr class="w-full h-px border-[#BBBBBB] mt-4">
-                            @if ($selectedOrder->tax > 0)
+                            @if ($tax > 0)
                                 <div class="w-full flex items-center justify-between">
                                     <p class="text-sm font-semibold">Tax:</p>
                                     <p class="w-[35%] text-center">
-                                        {{ $selectedOrder->tax }}%
+                                        {{ $tax }}%
                                     </p>
                                 </div>
                             @endif
                             <div class="w-full flex items-center justify-between">
                                 <p class="font-bold">Total:</p>
-                                <p class="w-[35%] text-center">₱{{ number_format($selectedOrder->total_amount, 2) }}
+                                <p class="w-[35%] text-center">₱{{ number_format($total_amount, 2) }}
                                 </p>
                             </div>
                         </div>
@@ -446,6 +475,7 @@
 
                     <livewire:order-list />
                 </div>
+            </div>
         @endif
 
         <livewire:receipt />

@@ -5,7 +5,8 @@ namespace App\Livewire;
 use App\Models\Task;
 use App\Models\Service;
 use Livewire\Component;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ServiceRequestMail;
 use App\Models\ServiceCategory;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NotificationService;
@@ -17,7 +18,7 @@ class HelpRequest extends Component
     public $search = '';
     public $selectedService = null;
     public $selectedCategory = null;
-    public $priority = '', $description = '';
+    public $description = '';
 
     public function selectService($categoryId, $serviceId)
     {
@@ -32,8 +33,7 @@ class HelpRequest extends Component
 
     public function closeRequest()
     {
-        $this->selectedService = null;
-        $this->selectedCategory = null;
+        $this->reset();
     }
 
     public function createRequest()
@@ -41,13 +41,10 @@ class HelpRequest extends Component
         try {
             $this->validate([
                 'selectedService.id' => 'required|exists:services,id',
-                'priority' => 'required|in:low,medium,high',
                 'description' => 'nullable|string',
             ], [
                 'selectedService.id.required' => 'Please select a service.',
                 'selectedService.id.exists' => 'The selected service is invalid.',
-                'priority.required' => 'Please select a priority level.',
-                'priority.in' => 'The selected priority is invalid.',
             ]);
         } catch (ValidationException $e) {
             $message = $e->validator->errors()->first();
@@ -57,14 +54,21 @@ class HelpRequest extends Component
 
         // Create task
         Task::create([
+            'user_id' => null,
             'service_id' => $this->selectedService->id,
-            'priority' => $this->priority,
-            'description' => $this->description,
             'customer_name' => Auth::user()->fullname,
             'customer_phone' => Auth::user()->phone_number,
-            'user_id' => null,
-            'status' => 'unassigned',
+            'description' => $this->description,
+            'tax' => 0,
+            'type' => 'online',
         ]);
+
+        Mail::to(Auth::user()->email)->send(
+            new ServiceRequestMail(
+                $this->selectedService->service,
+                Auth::user()->fullname
+            )
+        );
 
         app(NotificationService::class)->createNotif(
             "New Task Requested",

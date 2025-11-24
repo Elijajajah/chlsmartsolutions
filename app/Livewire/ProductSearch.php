@@ -41,7 +41,6 @@ class ProductSearch extends Component
             $this->selected[] = $item;
             session()->put('selected_products', $this->selected);
 
-            // Dispatch **only this product**
             $this->dispatch('addProducts', [$item]);
         }
     }
@@ -50,7 +49,6 @@ class ProductSearch extends Component
     public function render()
     {
         $products = Product::with(['category', 'serials' => fn($q) => $q->where('status', 'available')])
-            ->whereHas('serials', fn($q) => $q->where('status', 'available')) // only products with stock
             ->when($this->query, fn($q) => $q->where('name', 'like', '%' . $this->query . '%'))
             ->orderByDesc('created_at')
             ->paginate(6);

@@ -26,9 +26,7 @@ class TaskOverview extends Component
     {
         $tasks = Task::with('service')
             ->whereDate('created_at', '<=', now())
-            ->whereDate('expiry_date', '>=', now())
             ->where('status', 'pending')
-            ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
             ->take($this->take)
             ->get();
 

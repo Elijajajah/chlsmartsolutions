@@ -58,7 +58,6 @@
                                     </svg>
                                 </button>
                             </div>
-
                         </div>
                     @empty
                         <div
@@ -71,6 +70,12 @@
         </div>
     </div>
     <hr class="border-[#BBBBBB] mt-4 mb-2">
+    @if ($tax > 0)
+        <div class="flex items-center justify-between text-center font-inter text-sm py-3">
+            <p class="font-semibold pl-4">Total:</p>
+            <p class="w-[19.2%] font-bold">{{ $tax }}%</p>
+        </div>
+    @endif
     <div class="flex items-center justify-between text-center font-inter text-sm py-3">
         <p class="font-semibold pl-4">Total:</p>
         <p class="w-[19.2%] font-bold">₱{{ number_format($this->totalAmount, 2) }}</p>

@@ -71,7 +71,6 @@ class CashierDashboard extends Component
     public function getTaskTodayProperty()
     {
         return Task::whereDate('created_at', '<=', now())
-            ->whereDate('expiry_date', '>=', now())
             ->where('status', 'pending')
             ->count();
     }

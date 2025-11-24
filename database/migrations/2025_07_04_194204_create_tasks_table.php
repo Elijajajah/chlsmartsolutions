@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('service_id')->constrained()->cascadeOnDelete();
-            $table->enum('priority', ['low', 'medium', 'high']);
-            $table->longText('description')->nullable();
             $table->string('customer_name');
             $table->string('customer_phone');
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->enum('status', ['pending', 'completed', 'missed', 'unassigned', 'overdue'])->default('unassigned');
-            $table->date('expiry_date')->nullable();
+            $table->longText('description')->nullable();
+            $table->enum('type', ['government', 'walk_in', 'project_based', 'online']);
+            $table->unsignedSmallInteger('tax');
+            $table->enum('payment_method', ['none', 'cheque', 'bank_transfer', 'cash', 'ewallet'])->default('none');
+            $table->decimal('price', 12, 2)->default(0);
+            $table->enum('status', ['pending', 'completed', 'canceled', 'unassigned'])->default('unassigned');
             $table->timestamps();
         });
     }

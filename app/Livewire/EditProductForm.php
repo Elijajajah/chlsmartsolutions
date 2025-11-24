@@ -105,7 +105,7 @@ class EditProductForm extends Component
                 'supplier'           => 'required',
                 'original_price' => 'required|gt:0',
                 'retail_price' => 'required|gt:0|gt:original_price',
-                'min_limit'          => 'requiredmin:1',
+                'min_limit'          => 'required|min:1',
                 'description'        => 'required',
             ];
 

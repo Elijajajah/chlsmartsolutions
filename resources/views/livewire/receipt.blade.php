@@ -66,6 +66,12 @@
 
                     </div>
                     <hr class="w-full h-px border-[#BBBBBB] mt-4">
+                    @if (session('tax') > 0)
+                        <div class="w-full flex items-center justify-between">
+                            <p class="font-semibold text-sm">Tax:</p>
+                            <p class="w-[35%] text-center font-medium">{{ session('tax') }}%</p>
+                        </div>
+                    @endif
                     <div class="w-full flex items-center justify-between">
                         <p class="font-bold">Total:</p>
                         <p class="w-[35%] text-center font-medium">₱{{ number_format(session('total'), 2) }}</p>

@@ -66,7 +66,7 @@ class OrderController
         $order = Order::create([
             'user_id' => Auth::user()->id,
             'customer_name' => $customer_name,
-            'total_amount' => $request->total_amount * (1 + $tax / 100),
+            'total_amount' => $request->total_amount,
             'type' => $request->type,
             'tax' => $tax,
             'payment_method' => $payment_method,
@@ -111,6 +111,7 @@ class OrderController
             'showCard' => true,
             'orderId' => $order->id,
             'total' => $order->total_amount,
+            'tax' => $order->tax,
             'referenceId' => $order->reference_id,
         ]);
         return redirect()->route('landing.page');

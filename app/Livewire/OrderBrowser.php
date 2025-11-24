@@ -23,14 +23,37 @@ class OrderBrowser extends Component
     public $search = '';
     public $selectedOrder = null;
     public $showModal = false;
-    public $payment_method = 'none';
+    public $payment_method = 'none', $type = '', $tax = '', $total_amount = '', $price = '';
     public string $activeTab = 'orderBrowse';
+    public bool $typeInitialized = false;
 
     public function selectOrder($order_id)
     {
         $this->showModal = true;
         $this->selectedOrder = Order::with('productSerials.product')->find($order_id);
         $this->payment_method = $this->selectedOrder->payment_method;
+        $this->type = $this->selectedOrder->type;
+        $this->tax = $this->selectedOrder->tax;
+        $this->price = $this->selectedOrder->total_amount;
+        $this->total_amount = $this->selectedOrder->total_amount;
+    }
+
+    public function updatedTax()
+    {
+        $price = floatval($this->price ?: 0);
+        $tax   = floatval($this->tax ?: 0);
+
+        $this->total_amount = $price * (1 + $tax / 100);
+    }
+
+    public function updatedType($value)
+    {
+        if ($this->typeInitialized) {
+            $this->tax = '';
+            $this->total_amount = $this->price;
+        }
+
+        $this->typeInitialized = true;
     }
 
     public function closeModal()
@@ -66,9 +89,14 @@ class OrderBrowser extends Component
             try {
                 $this->validate([
                     'payment_method' => 'required|not_in:none',
+                    'type' => 'required',
+                    'tax' => 'required_if:type,government|numeric|min:0',
                 ], [
                     'payment_method.required' => 'Payment Method is required.',
                     'payment_method.not_in' => 'Please select a valid payment method.',
+                    'type.required' => 'Customer Type is required.',
+                    'tax.required_if' => 'Tax is required for government customers.',
+                    'tax.min' => 'Tax cannot be less than 0.',
                 ]);
             } catch (ValidationException $e) {
                 $message = $e->validator->errors()->first();
@@ -77,7 +105,26 @@ class OrderBrowser extends Component
             }
         }
 
-        $order = Order::with('productSerials')->findOrFail($id);
+        $order = Order::with('productSerials.product')->findOrFail($id);
+
+        foreach ($order->productSerials as $serial) {
+            if ($serial->status === 'sold') {
+                $product = $serial->product;
+
+                $replacement = $product->serials()
+                    ->where('status', 'available')
+                    ->whereNotIn('id', $order->productSerials->pluck('id'))
+                    ->first();
+
+                if ($replacement) {
+                    $order->productSerials()->detach($serial->id);
+                    $order->productSerials()->attach($replacement->id);
+                } else {
+                    notyf()->error("Product {$product->name} has no available item to replace.");
+                    return;
+                }
+            }
+        }
 
         if ($order->status === 'completed') {
             notyf()->error('Order has already been completed.');
@@ -94,7 +141,10 @@ class OrderBrowser extends Component
                 $order->productSerials()->update(['status' => 'sold']);
                 $order->update([
                     'status' => 'completed',
-                    'payment_method' => $this->payment_method
+                    'payment_method' => $this->payment_method,
+                    'total_amount' => $this->total_amount,
+                    'type' => $this->type,
+                    'tax' => $this->tax,
                 ]);
 
                 if ($order->user->role === 'customer') {
@@ -114,7 +164,10 @@ class OrderBrowser extends Component
                 $order->productSerials()->update(['status' => 'reserved']);
                 $order->update([
                     'status' => 'reserved',
-                    'payment_method' => $this->payment_method
+                    'payment_method' => $this->payment_method,
+                    'total_amount' => $this->total_amount,
+                    'type' => $this->type,
+                    'tax' => $this->tax,
                 ]);
 
                 if ($order->user->role === 'customer') {
@@ -132,7 +185,9 @@ class OrderBrowser extends Component
 
             case 'cancel':
                 $order->productSerials()->update(['status' => 'available']);
-                $order->update(['status' => 'canceled']);
+                $order->update([
+                    'status' => 'canceled'
+                ]);
 
                 if ($order->user->role === 'customer') {
                     Mail::to($order->user->email)->send(new OrderCanceledMail($order));
