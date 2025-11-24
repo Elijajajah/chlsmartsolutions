@@ -7,19 +7,14 @@ use App\Models\Task;
 
 class TaskService
 {
-    public function getTasksByDate($user_id, $date, $prio)
+    public function getTasksByDate($user_id, $date)
     {
         $query = Task::with('service')
             ->where('user_id', $user_id)
             ->whereDate('created_at', '<=', $date);
 
-        if ($prio != 'all') {
-            $query->where('priority', $prio);
-        }
-
-        return $query->paginate(11);
+        return $query->latest()->paginate(11);
     }
-
 
     public function getFilteredTask($status, $date)
     {
