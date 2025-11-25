@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Receipt;
 use Illuminate\Http\Request;
 use App\Models\ProductSerial;
 use Illuminate\Support\Facades\Auth;
@@ -34,11 +35,20 @@ class OrderController
             'type' => 'required',
             'customer_name' => 'nullable',
             'tax' => 'nullable',
-            'payment_method' => 'nullable'
+            'payment_method' => 'nullable',
+            'receipt' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ], [
             'total_amount.required' => 'Total Amount is required',
-            'type.required' => 'Please select a customer type.'
+            'type.required' => 'Please select a customer type.',
+            'receipt.image' => 'The file must be an image.',
+            'receipt.mimes' => 'Only JPG, JPEG, and PNG are allowed.',
+            'receipt.max' => 'Maximum file size is 5MB.',
         ]);
+
+        $receiptPath = null;
+        if ($request->hasFile('receipt')) {
+            $receiptPath = $request->file('receipt')->store('receipts', 'public');
+        }
 
         $tax = is_numeric($request->tax) ? $request->tax : 0;
         $payment_method = $request->payment_method !== null ? $request->payment_method : 'none';
@@ -90,6 +100,11 @@ class OrderController
             // Attach to order
             $order->productSerials()->attach($serials->pluck('id')->toArray());
         }
+
+        Receipt::create([
+            'order_id' => $order->id,
+            'path' => $receiptPath,
+        ]);
 
         session()->forget('cartItems');
 

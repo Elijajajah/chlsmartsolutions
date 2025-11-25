@@ -276,7 +276,7 @@
             @if ($showModal && $selectedOrder)
                 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
                     <div
-                        class="bg-white rounded-xl shadow-lg max-w-[280px] md:max-w-lg gap-6 w-full p-8 relative font-inter flex flex-col items-center justify-center">
+                        class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg w-full p-6 md:p-8 relative font-poppins flex flex-col gap-2 md:gap-4">
                         <button wire:click="closeModal"
                             class="cursor-pointer absolute top-3 right-3 bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-full shadow-md
                             hover:bg-red-600 hover:scale-110 transition transform duration-200">
@@ -429,7 +429,15 @@
                                 </p>
                             </div>
                         </div>
-
+                        @if ($selectedOrder->receipt)
+                            <details class="collapse collapse-arrow bg-base-100 border border-base-300 text-sm">
+                                <summary class="collapse-title font-semibold">Receipt</summary>
+                                <img class="cursor-pointer collapse-content w-[225px]"
+                                    onclick="openReceiptPreview(this.src)"
+                                    src="{{ $selectedOrder->receipt ? asset('storage/' . $selectedOrder->receipt->path) : '' }}"
+                                    alt="Receipt Image">
+                            </details>
+                        @endif
                         <div class="flex items-center justify-center w-full gap-2 mt-6">
                             <button wire:click="updateStatus({{ $selectedOrder->id }}, 'sold')"
                                 class="cursor-pointer flex gap-2 items-center py-2 px-4 bg-[#16A34A] rounded-md text-white">
@@ -455,7 +463,12 @@
                 </div>
             @endif
         @endif
+        <div id="receiptPreview" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[999] hidden"
+            onclick="closeReceiptPreview()">
 
+            <img id="receiptImage" src=""
+                class="max-w-[95%] max-h-[95%] object-contain rounded-lg shadow-xl">
+        </div>
         @if ($activeTab === 'addOrder')
             <div class="flex flex-col gap-6 md:gap-10">
                 <div class="flex items-center gap-4">
@@ -481,3 +494,14 @@
         <livewire:receipt />
     </div>
 </div>
+
+<script>
+    function openReceiptPreview(src) {
+        document.getElementById('receiptImage').src = src;
+        document.getElementById('receiptPreview').classList.remove('hidden');
+    }
+
+    function closeReceiptPreview() {
+        document.getElementById('receiptPreview').classList.add('hidden');
+    }
+</script>

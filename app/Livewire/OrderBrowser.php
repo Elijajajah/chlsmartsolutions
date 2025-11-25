@@ -30,7 +30,7 @@ class OrderBrowser extends Component
     public function selectOrder($order_id)
     {
         $this->showModal = true;
-        $this->selectedOrder = Order::with('productSerials.product')->find($order_id);
+        $this->selectedOrder = Order::with('productSerials.product', 'receipt')->find($order_id);
         $this->payment_method = $this->selectedOrder->payment_method;
         $this->type = $this->selectedOrder->type;
         $this->tax = $this->selectedOrder->tax;

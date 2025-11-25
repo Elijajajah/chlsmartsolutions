@@ -68,7 +68,9 @@
                     </div>
                 </div>
             </div>
-            <div class="w-full md:w-[35%] h-fit bg-white rounded-sm flex flex-col p-6 gap-8">
+            <form method="POST" action="/order" enctype="multipart/form-data"
+                class="w-full md:w-[35%] h-fit bg-white rounded-sm flex flex-col p-6 gap-2">
+                @csrf
                 <div class="flex flex-col w-full font-inter">
                     <h1 class="font-bold text-xl">Order Summary</h1>
                     <hr class="w-full h-px my-4 border-[#DCDCDC]">
@@ -91,20 +93,24 @@
                         <strong>chldisty888@gmail.com</strong> for confirmation so we can reserve your items for you.
                     </p>
                 </div>
-                <div class="flex flex-col w-full">
-                    <h1 class="font-bold text-lg font-inter">In-store payment</h1>
-                    <form method="POST" action="/order">
-                        @csrf
-                        <input type="text" class="hidden" name="total_amount" value="{{ $total }}">
-                        <input type="text" class="hidden" name="type" value="online">
 
-                        <button type="submit"
-                            class="cursor-pointer w-full bg-black font-poppins font-semibold text-lg text-white py-2 rounded-md mt-6">
-                            Checkout
-                        </button>
-                    </form>
+                <fieldset class="fieldset -mt-2">
+                    <legend class="fieldset-legend font-semibold text-xs md:text-sm">Upload Receipt</legend>
+                    <input type="file" class="file-input w-full" name="receipt" />
+                    <label class="label text-[0.6rem] md:text-xs">Max size 5MB (PNG, JPG, and JPEG only)</label>
+                </fieldset>
+
+                <div class="flex flex-col w-full mt-4">
+                    <h1 class="font-bold text-lg font-inter">In-store payment</h1>
+                    <input type="text" class="hidden" name="total_amount" value="{{ $total }}">
+                    <input type="text" class="hidden" name="type" value="online">
+
+                    <button type="submit"
+                        class="cursor-pointer w-full bg-black font-poppins font-semibold text-lg text-white py-2 rounded-md mt-6">
+                        Checkout
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
 
 

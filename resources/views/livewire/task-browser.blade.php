@@ -601,7 +601,7 @@
                         <div class="grid grid-cols-3 gap-2">
                             @foreach ($images as $img)
                                 <div class="w-full h-24 rounded-md overflow-hidden border cursor-pointer
-            hover:scale-105 transition-all duration-300"
+                                    hover:scale-105 transition-all duration-300"
                                     wire:click="openPreview('{{ $img->path }}')">
                                     <img src="{{ asset('storage/' . $img->path) }}"
                                         class="w-full h-full object-cover">

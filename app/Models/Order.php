@@ -30,4 +30,9 @@ class Order extends Model
         return $this->belongsToMany(ProductSerial::class, 'order_product_serial')
             ->withTimestamps();
     }
+
+    public function receipt()
+    {
+        return $this->hasOne(Receipt::class);
+    }
 }
