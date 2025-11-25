@@ -89,17 +89,22 @@
                             Out of Stock Alert - {{ count($this->getStocks('out')) }} item(s) need attention
                         </p>
                         <div class="flex flex-wrap items-center gap-2 text-xs font-medium w-full">
-                            @foreach ($outStocks as $outStock)
+                            @foreach ($showAllOut ? $this->getStocks('out') : $outStocks as $outStock)
                                 <div class="bg-[#DC2626]/15 py-1 px-3 rounded-full font-inter">
                                     <p class="text-[#DC2626] line-clamp-1 capitalize">{{ $outStock->name }}</p>
                                 </div>
                             @endforeach
                             @if (count($this->getStocks('out')) - count($outStocks) > 0)
-                                <div class="bg-[#DC2626]/20 py-1 px-3 rounded-full font-inter">
+                                <button wire:click="toggleOut"
+                                    class="cursor-pointer bg-[#DC2626]/20 py-1 px-3 rounded-full font-inter">
                                     <p class="text-[#DC2626] line-clamp-1">
-                                        +{{ count($this->getStocks('out')) - count($outStocks) }} more
+                                        @if ($showAllOut)
+                                            Show Less
+                                        @else
+                                            +{{ count($this->getStocks('out')) - count($outStocks) }} more
+                                        @endif
                                     </p>
-                                </div>
+                                </button>
                             @endif
                         </div>
                     </div>
@@ -120,17 +125,23 @@
                             Low Stock Alert - {{ count($this->getStocks('low')) }} items(s) need attention
                         </p>
                         <div class="flex flex-wrap items-center gap-2 text-xs font-medium w-full">
-                            @foreach ($lowStocks as $lowStock)
+                            @foreach ($showAllLow ? $this->getStocks('low') : $lowStocks as $lowStock)
                                 <div class="bg-[#EAB308]/50 py-1 px-3 rounded-full font-inter">
                                     <p class="line-clamp-1 capitalize">{{ $lowStock->name }}</p>
                                 </div>
                             @endforeach
                             @if (count($this->getStocks('low')) - count($lowStocks) > 0)
-                                <div class="bg-[#EAB308]/50 py-1 px-3 rounded-full font-inter">
+                                <button wire:click="toggleLow"
+                                    class="cursor-pointer bg-[#EAB308]/50 py-1 px-3 rounded-full font-inter">
                                     <p class="line-clamp-1">
-                                        +{{ count($this->getStocks('low')) - count($lowStocks) }} more
+                                        @if ($showAllLow)
+                                            Show Less
+                                        @else
+                                            +{{ count($this->getStocks('low')) - count($lowStocks) }} more
+                                        @endif
+
                                     </p>
-                                </div>
+                                </button>
                             @endif
                         </div>
                     </div>

@@ -27,6 +27,18 @@ class ProductBrowser extends Component
     public $productId = null;
     public $name = '';
     public $serial_numbers;
+    public $showAllOut = false;
+    public $showAllLow = false;
+
+    public function toggleOut()
+    {
+        $this->showAllOut = !$this->showAllOut;
+    }
+
+    public function toggleLow()
+    {
+        $this->showAllLow = !$this->showAllLow;
+    }
 
     public function addSerial()
     {
