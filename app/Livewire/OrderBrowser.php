@@ -108,7 +108,7 @@ class OrderBrowser extends Component
         $order = Order::with('productSerials.product')->findOrFail($id);
 
         foreach ($order->productSerials as $serial) {
-            if ($serial->status === 'sold') {
+            if ($serial->status === 'sold' || $serial->status === 'reserved') {
                 $product = $serial->product;
 
                 $replacement = $product->serials()

@@ -83,7 +83,7 @@ class TaskBrowser extends Component
                 'newEditService' => 'required|exists:services,id',
                 'newEditFullName' => 'required|string|max:255',
                 'newEditPhoneNumber' => 'required|regex:/^9[0-9]{9}$/',
-                'newEditType' => 'required|in:walk_in,project_based,government',
+                'newEditType' => 'required|in:online,walk_in,project_based,government',
                 'newEditPaymentMethod' => 'required|in:cheque,bank_transfer,ewallet,cash',
                 'newEditTax' => 'required_if:newEditType,government|numeric|min:1',
                 'newEditPrice' => 'required|min:0',

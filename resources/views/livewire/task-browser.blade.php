@@ -440,7 +440,7 @@
                     <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
                         <p class="text-xs md:text-sm font-medium">Category</p>
                         <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
-                            <select wire:model.live="newEditCategory"
+                            <select wire:model.live="newEditCategory" @if ($newEditType === 'online') disabled @endif
                                 class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
                                 <option value="all">Category</option>
                                 @foreach ($allserviceCategories as $category)
@@ -461,7 +461,7 @@
                     <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
                         <p class="text-xs md:text-sm font-medium">Services</p>
                         <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
-                            <select wire:model.live="newEditService"
+                            <select wire:model.live="newEditService" @if ($newEditType === 'online') disabled @endif
                                 class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-[#797979]">
                                 <option value="all">Services</option>
                                 @foreach ($filteredServices as $service)
@@ -504,6 +504,7 @@
                         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
                             <p class="text-xs md:text-sm font-medium">Full Name</p>
                             <input type="text" placeholder="John Doe" wire:model.live="newEditFullName"
+                                @if ($newEditType === 'online') disabled @endif
                                 class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
                         </div>
                         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
@@ -516,6 +517,7 @@
                                 </div>
                                 <input type="text" maxlength="10" inputmode="numeric" placeholder="9xxxxxxxxx"
                                     wire:model.live="newEditPhoneNumber"
+                                    @if ($newEditType === 'online') disabled @endif
                                     class="text-sm md:text-base w-full pl-18 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
                             </div>
                         </div>

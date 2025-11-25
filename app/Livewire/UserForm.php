@@ -25,7 +25,7 @@ class UserForm extends Component
 
     public function cancel()
     {
-        $this->dispatch('cancel')->to('user-browser');
+        $this->dispatch('cancel')->to('staff-browser');
     }
 
     public function createStaff()
