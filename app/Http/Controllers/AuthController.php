@@ -104,7 +104,7 @@ class AuthController
         $data = $cache['data'];
 
         // Create user now
-        User::create([
+        $user = User::create([
             'fullname' => $data['fullname'],
             'email' => $data['email'],
             'phone_number' => $data['phone'],
@@ -115,48 +115,10 @@ class AuthController
         // Remove OTP from cache
         Cache::forget('signup_otp_' . $request->email);
 
+        Auth::login($user);
+
         return response()->json(['message' => 'Account created successfully']);
     }
-    // public function userSignup(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'fullname' => 'required|max:35|regex:/^[A-Za-z\s]+$/',
-    //         'username' => 'required|unique:users,username|min:8|max:25',
-    //         'phone' => 'required|regex:/^9[0-9]{9}$/|unique:users,phone_number',
-    //         'password' => 'required|min:8|max:25',
-    //     ], [
-    //         'fullname.required' => 'Full name is required.',
-    //         'fullname.max' => 'Full name must not exceed 35 characters.',
-    //         'fullname.regex' => 'Full name must contain letters and spaces only.',
-    //         'username.required' => 'Username is required.',
-    //         'username.min' => 'Username must be at least 8 characters.',
-    //         'username.max' => 'Username must not exceed 25 characters.',
-    //         'username.unique' => 'Username has already been used.',
-    //         'phone.required' => 'Phone number is required.',
-    //         'phone.regex' => 'Phone number must start with 9 and contain exactly 10 digits.',
-    //         'phone.unique' => 'Phone number has already been used.',
-    //         'password.required' => 'Password is required.',
-    //         'password.min' => 'Password must be at least 8 characters.',
-    //         'password.max' => 'Password must not exceed 25 characters.',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         $message = $validator->errors()->first();
-    //         notyf()->error($message);
-    //         return redirect()->back()->withInput();
-    //     }
-
-    //     User::create([
-    //         'fullname' => $request->fullname,
-    //         'username' => $request->username,
-    //         'phone_number' => $request->phone,
-    //         'password' => Hash::make($request->password),
-    //         'role' => 'customer',
-    //     ]);
-
-    //     notyf()->success('Your account was created successfully.');
-    //     return redirect()->route('signin.page');
-    // }
 
     public function userSignout(Request $request)
     {

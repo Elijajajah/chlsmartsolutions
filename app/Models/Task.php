@@ -19,6 +19,7 @@ class Task extends Model
         'price',
         'status',
         'user_id',
+        'technician_id',
     ];
 
     public function user()

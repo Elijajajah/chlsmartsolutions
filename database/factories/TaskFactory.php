@@ -18,7 +18,8 @@ class TaskFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => 4,
+            'user_id' => 3,
+            'technician_id' => 4,
             'service_id' => ServiceCategory::inRandomOrder()->value('id'),
             'customer_name' => $this->faker->name,
             'customer_phone' => $this->faker->unique()->numerify('9#########'),

@@ -54,7 +54,8 @@ class HelpRequest extends Component
 
         // Create task
         Task::create([
-            'user_id' => null,
+            'user_id' => Auth::id(),
+            'technician_id' => null,
             'service_id' => $this->selectedService->id,
             'customer_name' => Auth::user()->fullname,
             'customer_phone' => Auth::user()->phone_number,

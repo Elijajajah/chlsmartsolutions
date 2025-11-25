@@ -7,10 +7,10 @@ use App\Models\Task;
 
 class TaskService
 {
-    public function getTasksByDate($user_id, $date)
+    public function getTasksByDate($technician_id, $date)
     {
         $query = Task::with('service')
-            ->where('user_id', $user_id)
+            ->where('technician_id', $technician_id)
             ->whereDate('created_at', '<=', $date);
 
         return $query->latest()->paginate(11);

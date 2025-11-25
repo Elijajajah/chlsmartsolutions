@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Task;
+use App\Models\User;
 use App\Models\Service;
 use Livewire\Component;
 use Illuminate\Support\Str;
@@ -10,8 +11,8 @@ use Livewire\WithPagination;
 use App\Services\TaskService;
 use App\Services\UserService;
 use App\Models\ServiceCategory;
-use App\Models\User;
 use Livewire\WithoutUrlPagination;
+use Illuminate\Support\Facades\Auth;
 use App\Services\NotificationService;
 use Illuminate\Validation\ValidationException;
 
@@ -59,7 +60,7 @@ class TaskBrowser extends Component
         $task = Task::with('images')->find($id);
         $this->editTaskId = $id;
         $this->images = $task->images;
-        $this->newEditTechnician = $task->user_id ?? '';
+        $this->newEditTechnician = $task->technician_id ?? '';
         $this->newEditCategory = optional($task->service)->service_category_id;
         $this->updatedNewEditCategory($this->newEditCategory);
         $this->newEditService = $task->service_id;
@@ -76,6 +77,9 @@ class TaskBrowser extends Component
 
     public function saveEditTask()
     {
+        if ($this->newEditTax == 0) {
+            $this->newEditTax = null;
+        }
         try {
             $this->validate([
                 'newEditTechnician' => 'required|exists:users,id',
@@ -85,7 +89,7 @@ class TaskBrowser extends Component
                 'newEditPhoneNumber' => 'required|regex:/^9[0-9]{9}$/',
                 'newEditType' => 'required|in:online,walk_in,project_based,government',
                 'newEditPaymentMethod' => 'required|in:cheque,bank_transfer,ewallet,cash',
-                'newEditTax' => 'required_if:newEditType,government|numeric|min:1',
+                'newEditTax' => 'required_if:newEditType,government|numeric|nullable|min:1',
                 'newEditPrice' => 'required|min:0',
                 'newEditDescription' => 'nullable|string',
             ], [
@@ -126,7 +130,7 @@ class TaskBrowser extends Component
 
         // Update the task
         $task->update([
-            'user_id' => $newTechnician,
+            'technician_id' => $newTechnician,
             'service_id' => $this->newEditService,
             'customer_name' => $this->newEditFullName,
             'customer_phone' => $this->newEditPhoneNumber,
@@ -242,7 +246,8 @@ class TaskBrowser extends Component
             'tax' => $this->newAddTax ?: 0,
             'payment_method' => $this->newAddPaymentMethod,
             'price' => floatval($this->newAddPrice) * (1 + floatval($this->newAddTax ?: 0) / 100),
-            'user_id' => $this->newAddTechnician ?: null,
+            'technician_id' => $this->newAddTechnician ?: null,
+            'user_id' => Auth::id(),
             'status' => $status,
         ]);
 

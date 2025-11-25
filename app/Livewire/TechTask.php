@@ -9,9 +9,11 @@ use App\Models\ActivityLog;
 use Livewire\WithPagination;
 use App\Services\TaskService;
 use Livewire\WithFileUploads;
+use App\Mail\TaskCompletedMail;
 use Livewire\WithoutUrlPagination;
 use App\Services\ActivityLogService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class TechTask extends Component
@@ -56,10 +58,9 @@ class TechTask extends Component
         }
     }
 
-
     public function updateStatus($id, ActivityLogService $activityLogService)
     {
-        $task = Task::find($id);
+        $task = Task::with('user', 'service')->findOrFail($id);
 
         try {
             $this->validate([
@@ -87,11 +88,14 @@ class TechTask extends Component
                 ]);
             }
         }
-
         if ($task->status != 'completed') {
             $task->status = 'completed';
             $task->save();
             $activityLogService->saveLog($id, Auth::user()->id);
+            if ($task->user && $task->user->role === 'customer' && $task->user->email) {
+                Mail::to($task->user->email)->send(new TaskCompletedMail($task));
+            }
+
             $this->dispatch('notificationRead')->to('sidebar');
             $this->closeModal();
             return;
@@ -103,6 +107,7 @@ class TechTask extends Component
     {
         $this->showModal = false;
         $this->selectedTask = null;
+        $this->images = [];
     }
 
     public function updated($property)
@@ -111,7 +116,6 @@ class TechTask extends Component
             $this->gotoPage(1);
         }
     }
-
 
     public function render(TaskService $taskService)
     {
