@@ -360,7 +360,6 @@
                             </div>
                         </div>
 
-                        <!-- Due Date (Matched Style) -->
                         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1 relative">
                             <p class="text-xs md:text-sm font-medium">Payment Method</p>
                             <div class="relative text-[#797979] mr-auto w-full">
@@ -369,6 +368,7 @@
                                     name="status" id="status">
                                     <option value="none">Payment Method</option>
                                     <option value="cheque">Cheque</option>
+                                    <option value="home_credit">Home-credit</option>
                                     <option value="bank_transfer">Bank Transfer</option>
                                     <option value="ewallet">E-Wallet</option>
                                     <option value="cash">Cash</option>
@@ -555,6 +555,7 @@
                                     name="status" id="status">
                                     <option value="none">Payment Method</option>
                                     <option value="cheque">Cheque</option>
+                                    <option value="home_credit">Home-credit</option>
                                     <option value="bank_transfer">Bank Transfer</option>
                                     <option value="ewallet">E-Wallet</option>
                                     <option value="cash">Cash</option>

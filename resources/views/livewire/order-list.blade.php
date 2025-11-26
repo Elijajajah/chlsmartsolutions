@@ -120,6 +120,7 @@
                         name="status" id="status">
                         <option value="none">Payment Method</option>
                         <option value="cheque">Cheque</option>
+                        <option value="home_credit">Home-credit</option>
                         <option value="bank_transfer">Bank Transfer</option>
                         <option value="ewallet">E-Wallet</option>
                         <option value="cash">Cash</option>
