@@ -8,8 +8,8 @@
                 <path d="m22 7-8.5 8.5-5-5L2 17" />
             </svg>
         </div>
-        <p class="font-medium text-xs mt-3">Total Revenue</p>
-        <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">All-time Revenue</p>
+        <p class="font-medium text-xs mt-3">Total Net Income</p>
+        <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">All-time Net Income</p>
         <h1 class="text-[#FF7555] font-semibold mt-6">
             ₱{{ number_format($this->totalSales - $this->totalExpenses, 2) }}</h1>
     </div>
