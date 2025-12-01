@@ -1,5 +1,25 @@
 <form wire:submit='createStaff' class="flex flex-col p-2 gap-2 rounded-md text-sm">
     <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+        <p class="text-sm font-medium">Role</p>
+        <div class="flex items-center flex-1 relative text-[#797979]">
+            <select wire:change="$set('role', $event.target.value)"
+                class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none">
+                <option disabled selected>Select Role</option>
+                <option value="admin_officer">Admin Officer</option>
+                <option value="cashier">Cashier</option>
+                <option value="technician-main">Technician - Main</option>
+                <option value="technician-support">Technician - Support</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                        clip-rule="evenodd" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
         <p class="text-sm font-medium">Fullname</p>
         <input wire:input="$set('fullname', $event.target.value)" type="text" placeholder="Enter name..."
             class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
@@ -22,26 +42,6 @@
         <p class="text-sm font-medium">Password</p>
         <input wire:input="$set('password', $event.target.value)" type="password" placeholder="Enter password..."
             class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
-    </div>
-    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-        <p class="text-sm font-medium">Role</p>
-        <div class="flex items-center flex-1 relative text-[#797979]">
-            <select wire:change="$set('role', $event.target.value)"
-                class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none">
-                <option disabled selected>Select Role</option>
-                <option value="admin_officer">Admin Officer</option>
-                <option value="cashier">Cashier</option>
-                <option value="technician-main">Technician - Main</option>
-                <option value="technician-support">Technician - Support</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
-                        clip-rule="evenodd" />
-                </svg>
-            </div>
-        </div>
     </div>
     <div class="flex flex-col md:flex-row items-center justify-end w-full gap-2 md:gap-4 mt-4 md:mt-6 text-sm">
         <button wire:click='cancel' type="button"

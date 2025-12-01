@@ -1,9 +1,5 @@
 <form wire:submit='createExpense' class="flex flex-col gap-3">
-    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-        <p class="text-xs md:text-sm font-medium">Expense Title</p>
-        <input wire:input="$set('title', $event.target.value)" type="text" placeholder="e.g. Electric Bill"
-            class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
-    </div>
+
     <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
         <p class="text-xs md:text-sm font-medium">Category</p>
         <div class="text-sm md:text-base flex items-center flex-1 relative text-[#797979]">
@@ -26,6 +22,11 @@
         </div>
     </div>
     <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
+        <p class="text-xs md:text-sm font-medium">Expense Title</p>
+        <input wire:input="$set('title', $event.target.value)" type="text" placeholder="e.g. Electric Bill"
+            class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+    </div>
+    <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
         <p class="text-xs md:text-sm font-medium">Amount(₱)</p>
         <input wire:input="$set('amount', $event.target.value)" type="number" placeholder="0.00"
             class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
@@ -37,8 +38,8 @@
                 class="text-sm md:text-base hide-calendar w-full pr-10 pl-4 py-2 border border-gray-500 rounded-md focus:outline-none" />
             <svg onclick="document.getElementById('date').showPicker()"
                 class="absolute top-2 right-4 cursor-pointer text-gray-600 hover:text-gray-800 size-5 md:size-6"
-                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M8 2v4" />
                 <path d="M16 2v4" />
                 <rect width="18" height="18" x="3" y="4" rx="2" />
@@ -59,7 +60,8 @@
             class="w-full flex-1 py-2 border border-[#4f4f4f] rounded-md text-xs md:text-sm cursor-pointer">
             Cancel
         </button>
-        <button class="w-full flex-1 py-2 bg-[#203D3F] rounded-md text-xs md:text-sm text-white cursor-pointer" type="submit">
+        <button class="w-full flex-1 py-2 bg-[#203D3F] rounded-md text-xs md:text-sm text-white cursor-pointer"
+            type="submit">
             Save Expense
         </button>
     </div>
