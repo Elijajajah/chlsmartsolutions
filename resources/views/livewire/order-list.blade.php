@@ -137,8 +137,15 @@
             @if ($type === 'government')
                 <div class="flex flex-col text-[#4f4f4f] gap-1 w-full md:w-fit">
                     <p class="text-sm font-medium">Tax</p>
-                    <input type="number" placeholder="Enter Tax..." wire:model.live="tax" id="tax" name="tax"
-                        class="text-sm w-full md:w-[200px] pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                    <div class="relative w-full md:w-[200px]">
+                        <input type="number" placeholder="Enter Tax..." wire:model.live="tax" id="tax"
+                            name="tax"
+                            class="text-sm w-full pl-4 pr-8 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+
+                        <span class="absolute inset-y-0 right-3 flex items-center text-[#797979] pointer-events-none">
+                            %
+                        </span>
+                    </div>
                 </div>
             @endif
             <div class="w-full flex justify-end">

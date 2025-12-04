@@ -382,9 +382,16 @@
                                 </div>
                             </div>
                             @if ($type === 'government')
-                                <input type="number" placeholder="Enter Tax..." wire:model.live="tax"
-                                    id="tax" name="tax"
-                                    class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                                <div class="relative w-full md:w-[200px]">
+                                    <input type="number" placeholder="Enter Tax..." wire:model.live="tax"
+                                        id="tax" name="tax"
+                                        class="text-sm w-full pl-4 pr-8 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+
+                                    <span
+                                        class="absolute inset-y-0 right-3 flex items-center text-[#797979] pointer-events-none">
+                                        %
+                                    </span>
+                                </div>
                             @endif
                         </div>
                         <div class="flex flex-col gap-2 w-full">
@@ -430,12 +437,13 @@
                                 </p>
                             </div>
                         </div>
-                        @if ($selectedOrder->receipt)
+                        @if ($selectedOrder->receipt && $selectedOrder->receipt->path)
                             <details class="collapse collapse-arrow bg-base-100 border border-base-300 text-sm">
                                 <summary class="collapse-title font-semibold">Receipt</summary>
+
                                 <img class="cursor-pointer collapse-content w-[225px]"
                                     onclick="openReceiptPreview(this.src)"
-                                    src="{{ $selectedOrder->receipt ? asset('storage/' . $selectedOrder->receipt->path) : '' }}"
+                                    src="{{ asset('storage/' . $selectedOrder->receipt->path) }}"
                                     alt="Receipt Image">
                             </details>
                         @endif

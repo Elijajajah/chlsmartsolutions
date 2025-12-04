@@ -387,15 +387,22 @@
                     <div class="flex flex-col md:flex-row md:gap-4 w-full">
                         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
                             <p class="text-xs md:text-sm font-medium">Price</p>
-                            <input type="text" placeholder="250.0 eg" wire:model.live="newAddPrice"
+                            <input type="number" placeholder="250.0 eg" wire:model.live="newAddPrice"
                                 class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
                         </div>
                         @if ($newAddType === 'government')
                             <div class="flex flex-col text-[#4f4f4f] gap-1 w-full md:w-fit">
                                 <p class="text-xs md:text-sm font-medium">Tax</p>
-                                <input type="number" placeholder="Enter Tax..." wire:model.live="newAddTax"
-                                    id="tax" name="tax"
-                                    class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                                <div class="relative w-full md:w-[200px]">
+                                    <input type="number" placeholder="Enter Tax..." wire:model.live="newAddTax"
+                                        id="tax" name="tax"
+                                        class="text-sm w-full pl-4 pr-8 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+
+                                    <span
+                                        class="absolute inset-y-0 right-3 flex items-center text-[#797979] pointer-events-none">
+                                        %
+                                    </span>
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -574,15 +581,22 @@
                     <div class="flex flex-col md:flex-row md:gap-4 w-full">
                         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
                             <p class="text-xs md:text-sm font-medium">Price</p>
-                            <input type="text" placeholder="250.0 eg" wire:model.live="newEditPrice"
+                            <input type="number" placeholder="250.0 eg" wire:model.live="newEditPrice"
                                 class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
                         </div>
                         @if ($newEditType === 'government')
                             <div class="flex flex-col text-[#4f4f4f] gap-1 w-full md:w-fit">
                                 <p class="text-xs md:text-sm font-medium">Tax</p>
-                                <input type="number" placeholder="Enter Tax..." wire:model.live="newEditTax"
-                                    id="tax" name="tax"
-                                    class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+                                <div class="relative w-full md:w-[200px]">
+                                    <input type="number" placeholder="Enter Tax..." wire:model.live="newEditTax"
+                                        id="tax" name="tax"
+                                        class="text-sm w-full pl-4 pr-8 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+
+                                    <span
+                                        class="absolute inset-y-0 right-3 flex items-center text-[#797979] pointer-events-none">
+                                        %
+                                    </span>
+                                </div>
                             </div>
                         @endif
                     </div>
