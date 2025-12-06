@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Supplier;
 use App\Models\Inventory;
 use App\Models\ProductSerial;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,7 +24,7 @@ class ProductFactory extends Factory
         $category = Category::inRandomOrder()->first() ?? Category::factory()->create();
 
         $product = [
-            'supplier' => $this->faker->words(3, true),
+            'supplier_id' => Supplier::inRandomOrder()->first()->id ?? Supplier::factory()->create()->id,
             'name' => $this->faker->words(2, true),
             'description' => $this->faker->paragraph(),
             'original_price' => $this->faker->randomFloat(2, 100, 3000),

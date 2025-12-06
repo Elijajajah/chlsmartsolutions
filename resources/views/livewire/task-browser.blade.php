@@ -131,7 +131,6 @@
 
                     <button wire:click="$set('activeTab', 'serviceBrowse')"
                         class="flex-1 cursor-pointer px-4 py-2 bg-[#203D3F] rounded-md flex items-center text-white gap-4 md:gap-2">
-                        <p class="text-sm">Service</p>
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round" class="lucide lucide-move-right-icon lucide-move-right">

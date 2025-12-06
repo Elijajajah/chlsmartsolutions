@@ -293,7 +293,6 @@
 
                         <button wire:click="$set('activeTab', 'categoryBrowse')"
                             class="flex-1 cursor-pointer px-4 py-2 bg-[#203D3F] rounded-md flex items-center text-white gap-4 md:gap-2">
-                            <p class="text-sm">Category</p>
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round"
@@ -584,6 +583,142 @@
 
                         <button wire:click="nextPage" wire:loading.attr="disabled"
                             @if (!$categs->hasMorePages()) disabled @endif
+                            class="flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700">
+                            <span class="sr-only">Next</span>
+                            <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 9 4-4-4-4" />
+                            </svg>
+                        </button>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <div class="flex flex-col gap-4 bg-white rounded-2xl p-4 font-poppins">
+            <h1 class="text-[#203D3F] text-lg font-semibold">Supplier List</h1>
+            <div class="flex flex-col-reverse md:flex-row items-center justify-between w-full gap-2">
+                <div class="relative text-[#797979] w-full md:w-auto">
+                    <input wire:input.debounce.300ms="$set('searchSup', $event.target.value)" type="text"
+                        placeholder="Search supplier..."
+                        class="text-sm md:text-base w-full pr-10 pl-4 py-2  border border-gray-500 rounded-md focus:outline-none" />
+
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                        </svg>
+                    </div>
+                </div>
+                <div
+                    class="flex flex-col-reverse md:flex-row items-end md:items-center gap-2 md:gap-6 w-full md:w-auto">
+
+                    <livewire:add-supplier />
+                </div>
+            </div>
+            <div class="w-full overflow-x-auto">
+                <div class="min-w-[720px] flex flex-col font-inter">
+                    <div class="rounded-t-3xl bg-[#EEF2F5] w-full flex items-center text-center p-3">
+                        <div class="w-[40%] text-start pl-1">Supplier</div>
+                        <div class="w-[20%]">No. of Products</div>
+                        <div class="w-[25%]">Created At</div>
+                        <div class="w-[15%]">Actions</div>
+                    </div>
+                    <div class="w-full flex flex-col text-center bg-white">
+                        @forelse ($suppliers as $supplier)
+                            <div
+                                class="w-full flex items-center text-sm border-x border-b border-[#EEF2F5] text-[#484848]">
+                                <div
+                                    class="w-[40%] text-start px-1 pl-3 border-x border-[#EEF2F5] py-4 flex items-center gap-2 pr-8">
+                                    <input wire:input.debounce.300ms="$set('name', $event.target.value)"
+                                        type="text" value="{{ $supplier->name }}"
+                                        @if ($supEditingId !== $supplier->id) readonly @endif
+                                        class="focus:outline-none line-clamp-1 capitalize w-full {{ $supEditingId === $supplier->id ? 'border-b py-1' : 'bg-transparent' }}" />
+                                </div>
+                                <div class="w-[20%] py-4 px-1">
+                                    {{ count($supplier->products) }}
+                                </div>
+                                <div class="w-[25%] py-4 px-1 border-x border-[#EEF2F5]">
+                                    {{ \Carbon\Carbon::parse($supplier->created_at)->format('F d, Y') }}
+                                </div>
+                                <div class="w-[15%] pr-4 py-3 flex items-center justify-center gap-2 text-xs">
+                                    <button wire:click='editSupplier({{ $supplier->id }})'
+                                        class="cursor-pointer text-[#3B82F6]">
+                                        @if ($supEditingId == $supplier->id)
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="lucide lucide-save-icon lucide-save">
+                                                <path
+                                                    d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+                                                <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+                                                <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+                                            </svg>
+                                        @else
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="lucide lucide-square-pen-icon lucide-square-pen">
+                                                <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path
+                                                    d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
+                                            </svg>
+                                        @endif
+                                    </button>
+                                    <button wire:click='removeSupplier({{ $supplier->id }})'
+                                        class="cursor-pointer text-red-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                            class="lucide lucide-trash2-icon lucide-trash-2">
+                                            <path d="M10 11v6" />
+                                            <path d="M14 11v6" />
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                                            <path d="M3 6h18" />
+                                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="w-full py-8 flex items-center justify-center text-sm text-[#9A9A9A]">
+                                No Supplier found.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+            <div class="w-full flex flex-col md:flex-row gap-2 items-center justify-between h-fit p-2">
+                <p class="">Showing {{ $suppliers->firstItem() ?? 0 }} to {{ $suppliers->lastItem() }} of
+                    {{ $suppliers->total() }}
+                    entries</p>
+                <nav>
+                    <div class="flex items-center -space-x-px h-8">
+                        <button wire:click="previousPage" wire:loading.attr="disabled"
+                            @if ($suppliers->onFirstPage()) disabled @endif
+                            class="text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center px-3 h-8 ms-0 leading-tight bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700">
+                            <span class="sr-only">Previous</span>
+                            <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="M5 1 1 5l4 4" />
+                            </svg>
+                        </button>
+
+                        @foreach (range(1, $suppliers->lastPage()) as $page)
+                            <div wire:click="gotoPage({{ $page }})"
+                                class="flex items-center justify-center px-3 h-8 leading-tight
+                                    {{ $suppliers->currentPage() === $page
+                                        ? 'text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700'
+                                        : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 cursor-pointer' }}">
+                                {{ $page }}
+                            </div>
+                        @endforeach
+
+
+                        <button wire:click="nextPage" wire:loading.attr="disabled"
+                            @if (!$suppliers->hasMorePages()) disabled @endif
                             class="flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700">
                             <span class="sr-only">Next</span>
                             <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true"

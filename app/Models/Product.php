@@ -9,7 +9,7 @@ class Product extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'supplier',
+        'supplier_id',
         'original_price',
         'retail_price',
         'description',
@@ -34,5 +34,10 @@ class Product extends Model
         return $this->serials()
             ->where('status', 'available')
             ->count();
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
     }
 }

@@ -7,6 +7,7 @@ use Livewire\Component;
 use App\Models\Category;
 use Livewire\WithPagination;
 use App\Models\ProductSerial;
+use App\Models\Supplier;
 use App\Services\ProductService;
 use App\Services\CategoryService;
 use Livewire\WithoutUrlPagination;
@@ -19,10 +20,12 @@ class ProductBrowser extends Component
     public $categories = [];
     public $search = '';
     public $searchCat = '';
+    public $searchSup = '';
     public $selectedCategory = 0;
     public $selectedStock = null;
     public $showModal = false;
     public string $activeTab = 'productBrowse';
+    public $supEditingId = null;
     public $editingId = null;
     public $productId = null;
     public $name = '';
@@ -185,13 +188,56 @@ class ProductBrowser extends Component
         $this->editingId = $id;
     }
 
-
     public function removeCategory($id)
     {
         $category = Category::find($id);
         $category->delete();
         notyf()->success('Category deleted successfully.');
     }
+
+    public function editSupplier($id)
+    {
+        $supplier = Supplier::find($id);
+
+        // If already editing → save
+        if ($this->supEditingId === $id) {
+
+            // Validate only when saving
+            try {
+                $this->validate([
+                    'name' => 'required|unique:suppliers,name,' . $id,
+                ], [
+                    'name.required' => 'The Supplier name is required.',
+                    'name.unique'   => 'This supplier name already exists.',
+                ]);
+            } catch (ValidationException $e) {
+                notyf()->error($e->validator->errors()->first());
+                return;
+            }
+
+            // Only save if something changed
+            if ($this->name != $supplier->name) {
+                $supplier->name = $this->name;
+                $supplier->save();
+                notyf()->success('Supplier is renamed successfully');
+            }
+
+            $this->supEditingId = null;
+            return;
+        }
+
+        // Not editing → start editing
+        $this->name = $supplier->name;
+        $this->supEditingId = $id;
+    }
+
+    public function removeSupplier($id)
+    {
+        $supplier = Supplier::find($id);
+        $supplier->delete();
+        notyf()->success('Supplier deleted successfully.');
+    }
+
 
     public function editProduct($id)
     {
@@ -201,10 +247,18 @@ class ProductBrowser extends Component
 
     public function render(ProductService $productService, CategoryService $categoryService)
     {
+        $supplier = Supplier::with('products')
+            ->when($this->searchSup, function ($query) {
+                $query->where('name', 'like', '%' . $this->searchSup . '%');
+            })
+            ->orderBy('name')
+            ->paginate(10);
+
         return view('livewire.product-browser', [
             'topProducts' => $productService->getTopSellingProduct()->take(4),
             'products' => $productService->getProductWithStock($this->selectedCategory, $this->search),
             'categs' => $categoryService->getCategory($this->searchCat),
+            'suppliers' => $supplier,
             'lowStocks' => $this->getStocks('low')->take(5),
             'outStocks' => $this->getStocks('out')->take(5),
         ]);
