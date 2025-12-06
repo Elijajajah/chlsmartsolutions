@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Product;
 use Livewire\Component;
 use App\Models\ProductSerial;
+use App\Models\Supplier;
 use Livewire\WithFileUploads;
 use App\Services\CategoryService;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,7 @@ class EditProductForm extends Component
 {
     use WithFileUploads;
     public $name;
-    public $supplier;
+    public $supplierId;
     public $categoryId;
     public $categoryName;
     public $min_limit;
@@ -35,7 +36,7 @@ class EditProductForm extends Component
         if ($product) {
             $this->selectedProductId = $product->id;
             $this->name = $product->name;
-            $this->supplier = $product->supplier;
+            $this->supplierId = $product->supplier_id;
             $this->categoryId = $product->category_id;
             $this->categoryName = $product->category->name;
             $this->min_limit = $product->min_limit;
@@ -83,7 +84,7 @@ class EditProductForm extends Component
 
         $hasChanges =
             $this->name !== $product->name ||
-            $this->supplier !== $product->supplier ||
+            $this->supplierId !== $product->supplier_id ||
             $this->categoryId != $product->category_id ||
             $this->retail_price != $product->retail_price ||
             $this->description !== $product->description ||
@@ -102,7 +103,7 @@ class EditProductForm extends Component
                 'serial_numbers.*'   => 'required|string|max:35|distinct',
                 'name'               => 'required|max:255|unique:products,name,' . $product->id,
                 'categoryId'         => 'required|exists:categories,id',
-                'supplier'           => 'required',
+                'supplierId'           => 'required|exists:suppliers,id',
                 'original_price' => 'required|gt:0',
                 'retail_price' => 'required|gt:0|gt:original_price',
                 'min_limit'          => 'required|min:1',
@@ -123,7 +124,8 @@ class EditProductForm extends Component
                 'name.max'                       => 'Product name must not exceed 255 characters.',
                 'categoryId.required'            => 'Please select a category.',
                 'categoryId.exists'              => 'The selected category does not exist.',
-                'supplier.required'              => 'Supplier/Contributor is required.',
+                'supplierId.required'            => 'Please select a Supplier/Distributor.',
+                'supplierId.exists'              => 'The selected Supplier does not exist.',
                 'original_price.required'        => 'Original price is required.',
                 'original_price.gt' => 'Product price must be greater than zero.',
                 'retail_price.required'          => 'Retail price is required.',
@@ -171,7 +173,7 @@ class EditProductForm extends Component
 
         $product->update([
             'name' => $this->name,
-            'supplier' => $this->supplier,
+            'supplier_id' => $this->supplierId,
             'category_id' => $this->categoryId,
             'original_price' => $this->original_price,
             'retail_price' => $this->retail_price,
@@ -216,8 +218,10 @@ class EditProductForm extends Component
 
     public function render(CategoryService $categoryService)
     {
+        $suppliers = Supplier::all();
         return view('livewire.edit-product-form', [
             'categories' => $categoryService->getAllCategory(),
+            'suppliers' => $suppliers,
         ]);
     }
 }

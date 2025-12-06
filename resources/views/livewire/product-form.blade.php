@@ -24,26 +24,25 @@
             <input type="text" placeholder="Enter Name..." wire:input="$set('name', $event.target.value)"
                 class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
         </div>
-        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1 relative" x-data="{ open: false }"
-            @click.away="open = false">
+        <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
             <p class="text-sm font-medium">Supplier/Distributor</p>
-
-            <input type="text" placeholder="Supplier/Distributor..." wire:model.live="supplier" @input="open = true"
-                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
-
-            @if (!empty($supplierSuggestions))
-                <ul class="absolute left-0 top-full mt-1 z-20 bg-white border rounded-md w-full shadow-lg max-h-48 overflow-y-auto"
-                    x-show="open">
-                    @foreach ($supplierSuggestions as $item)
-                        <li class="px-3 py-2 hover:bg-gray-200 cursor-pointer"
-                            wire:click="selectSupplier('{{ $item }}')" @click="open = false">
-                            {{ ucwords($item) }}
-                        </li>
+            <div class="flex items-center flex-1 relative text-[#797979]">
+                <select wire:change="$set('supplierId', $event.target.value)"
+                    class="text-sm md:text-base w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none">
+                    <option disabled selected>Select a Supplier</option>
+                    @foreach ($suppliers as $supplier)
+                        <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                     @endforeach
-                </ul>
-            @endif
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </div>
         </div>
-
     </div>
     <div class="flex flex-col md:flex-row gap-4 w-full">
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">

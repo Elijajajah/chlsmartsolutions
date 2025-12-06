@@ -6,6 +6,7 @@ use App\Models\Product;
 use Livewire\Component;
 use App\Models\Inventory;
 use App\Models\ProductSerial;
+use App\Models\Supplier;
 use Livewire\WithFileUploads;
 use App\Services\CategoryService;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,7 @@ class ProductForm extends Component
     public $supplier = '';
     public $supplierSuggestions = [];
     public $categoryId;
+    public $supplierId;
     public $original_price;
     public $retail_price;
     public $min_limit;
@@ -69,7 +71,7 @@ class ProductForm extends Component
                 'serial_numbers.*' => 'required|string|max:35|distinct',
                 'name' => 'required|unique:products,name|max:255',
                 'categoryId' => 'required|exists:categories,id',
-                'supplier' => 'required',
+                'supplierId' => 'required|exists:suppliers,id',
                 'original_price' => 'required|gt:0',
                 'retail_price' => 'required|gt:0|gt:original_price',
                 'min_limit' => 'required|min:1',
@@ -85,7 +87,8 @@ class ProductForm extends Component
                 'name.max' => 'Product name must not exceed 255 characters.',
                 'categoryId.required' => 'Please select a category.',
                 'categoryId.exists' => 'The selected category does not exist.',
-                'supplier.required' => 'Supplier/Contributor is required.',
+                'supplierId.required' => 'Please select a Supplier/Contributor.',
+                'supplierId.exists' => 'The selected Supplier/Contributor does not exist.',
                 'original_price.required' => 'Product price is required.',
                 'original_price.gt' => 'Product price must be greater than zero.',
                 'retail_price.required' => 'Product price is required.',
@@ -121,7 +124,7 @@ class ProductForm extends Component
         $product = Product::create([
             'name' => $this->name,
             'category_id' => $this->categoryId,
-            'supplier' => $this->supplier,
+            'supplier_id' => $this->supplierId,
             'original_price' => $this->original_price,
             'retail_price' => $this->retail_price,
             'description' => $this->description,
@@ -148,8 +151,10 @@ class ProductForm extends Component
 
     public function render(CategoryService $categoryService)
     {
+        $suppliers = Supplier::all();
         return view('livewire.product-form', [
             'categories' => $categoryService->getAllCategory(),
+            'suppliers' => $suppliers,
         ]);
     }
 }

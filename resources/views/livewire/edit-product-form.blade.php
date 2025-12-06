@@ -27,10 +27,23 @@
                 class="w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none capitalize text-[#797979] text-sm md:text-base" />
         </div>
         <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
-            <p class="text-sm font-medium">Supplier/Distrubutor</p>
-            <input type="text" placeholder="Supplier/Distrubutor..."
-                wire:input="$set('supplier', $event.target.value)" value="{{ $supplier }}"
-                class="text-sm md:text-base w-full pl-4 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
+            <p class="text-sm font-medium">Supplier/Distributor</p>
+            <div class="flex items-center flex-1 relative text-[#797979]">
+                <select wire:model.live="supplierId"
+                    class="text-sm md:text-base w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none">
+                    <option disabled>Select a Supplier</option>
+                    @foreach ($suppliers as $supplier)
+                        <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                    @endforeach
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </div>
         </div>
     </div>
     <div class="flex flex-col md:flex-row gap-4 w-full">
