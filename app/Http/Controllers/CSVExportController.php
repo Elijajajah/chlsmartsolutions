@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use ZipArchive;
 use App\Exports\SalesExport;
-use App\Exports\ServicesExport;
-use App\Exports\ExpensesExport;
 use Illuminate\Http\Request;
+use App\Exports\ExpensesExport;
+use App\Exports\ServicesExport;
+use App\Exports\ProductsExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CSVExportController
@@ -79,5 +80,10 @@ class CSVExportController
         return response()->download($zipFilePath, 'sales_services.zip', [
             'Content-Type' => 'application/zip',
         ])->deleteFileAfterSend(true);
+    }
+
+    public function exportProducts()
+    {
+        return Excel::download(new ProductsExport(), 'products.xlsx');
     }
 }

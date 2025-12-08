@@ -1,4 +1,8 @@
 <div class="flex flex-col gap-4 md:gap-6 pb-4 md:pb-0">
+    <button wire:click="exportProducts"
+        class="cursor-pointer px-4 py-2 bg-[#203D3F] rounded-md text-white text-sm gap-2 whitespace-nowrap w-fit ml-auto">
+        Download Report
+    </button>
     <div class="flex flex-col md:flex-row items-center font-poppins gap-2 md:gap-4">
         <div
             class="w-full flex-1 flex items-center justify-between bg-white rounded-lg pl-4 px-10 py-4 border-l-6 border-blue-600">

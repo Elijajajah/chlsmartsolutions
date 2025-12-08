@@ -245,6 +245,12 @@ class ProductBrowser extends Component
         $this->productId = $id;
     }
 
+    public function exportProducts()
+    {
+        return redirect()->to(route('export.products'));
+    }
+
+
     public function render(ProductService $productService, CategoryService $categoryService)
     {
         $supplier = Supplier::with('products')

@@ -32,6 +32,7 @@ Route::middleware('role:customer,owner,admin_officer,cashier')->group(function (
 Route::middleware('role:owner,admin_officer')->group(function () {
     Route::get('/export/expenses', [CSVExportController::class, 'exportExpenses'])->name('export.expenses');
     Route::get('/export/sales-services', [CSVExportController::class, 'exportSalesAndServices'])->name('export.sales.services');
+    Route::get('/export/products', [CSVExportController::class, 'exportProducts'])->name('export.products');
     Route::get('/export/all', [CSVExportController::class, 'exportAll'])->name('export.all');
 });
 

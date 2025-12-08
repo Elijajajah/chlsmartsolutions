@@ -6,9 +6,10 @@ use Carbon\Carbon;
 use App\Models\Order;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Events\AfterSheet;
 
-class SalesExport implements FromArray, WithEvents
+class SalesExport implements FromArray, ShouldAutoSize, WithEvents
 {
     protected $startDate;
 
@@ -54,6 +55,9 @@ class SalesExport implements FromArray, WithEvents
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
+
+                // BOLD HEADER
+                $sheet->getStyle('A1:E1')->getFont()->setBold(true);
 
                 // Lock the sheet
                 $sheet->getProtection()->setSheet(true);
