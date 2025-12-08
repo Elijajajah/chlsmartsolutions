@@ -12,7 +12,12 @@ class ProductsExport implements FromArray, ShouldAutoSize, WithEvents
 {
     public function array(): array
     {
-        $products = Product::with('serials', 'supplier')->get();
+        $products = Product::with([
+            'supplier',
+            'serials' => function ($q) {
+                $q->where('status', '!=', 'sold');
+            }
+        ])->get();
 
         $result = [
             ['Product Name', 'Serial Number', 'Supplier', 'Original Price', 'Retail Price']
