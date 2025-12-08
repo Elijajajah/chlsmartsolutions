@@ -54,7 +54,7 @@ class ProductService
 
     public function getTopSellingProduct()
     {
-        // Load products with serials and their related completed orders
+        // Load all products with sold serials and completed orders
         $products = Product::with([
             'serials' => function ($q) {
                 $q->where('status', 'sold');
@@ -65,9 +65,8 @@ class ProductService
             'category'
         ])->get();
 
-        // Calculate total sales per product (based on completed orders)
+        // Map sold count for each product
         $products = $products->map(function ($product) {
-            // Count how many serials of this product are tied to completed orders
             $soldCount = $product->serials->reduce(function ($carry, $serial) {
                 return $carry + $serial->orders->count();
             }, 0);
@@ -76,14 +75,25 @@ class ProductService
             return $product;
         });
 
-        // Get the highest sold count
+        // Apply the min_limit condition BEFORE computing score
+        $products = $products->filter(function ($product) {
+            return $product->availableCount() <= $product->min_limit;
+        });
+
+        // If no products match min_limit, return empty collection
+        if ($products->isEmpty()) {
+            return collect();
+        }
+
+        // Get max sold count
         $maxSold = $products->max('sold_count');
 
-        // Compute and rank products by sales score
+        // Compute score & rank
         return $products->map(function ($product) use ($maxSold) {
             $product->sales_score = $maxSold > 0
                 ? round(($product->sold_count / $maxSold) * 100, 2)
                 : 0;
+
             return $product;
         })
             ->filter(fn($p) => $p->sales_score > 0)
