@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 class OrderList extends Component
 {
     public $products = [];
-    public $type = '', $customer_name = '', $payment_method = 'none', $tax = '', $price = '', $total_amount = '';
+    public $type = '', $customer_name = '', $payment_method = '', $tax = '', $price = '', $total_amount = '';
     protected $listeners = ['addProducts' => 'updateProductsList'];
 
     public function mount()
@@ -207,7 +207,7 @@ class OrderList extends Component
             $this->validate([
                 'customer_name'   => 'required|max:100',
                 'type'            => 'required|in:walk_in,project_based,government',
-                'payment_method'  => 'required|not_in:none',
+                'payment_method'  => 'required',
                 'tax' => 'required_if:type,government|numeric|min:1',
             ], [
                 'customer_name.required' => 'Please insert a customer name.',

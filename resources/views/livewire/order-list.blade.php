@@ -138,13 +138,23 @@
                 <div class="flex flex-col text-[#4f4f4f] gap-1 w-full md:w-fit">
                     <p class="text-sm font-medium">Tax</p>
                     <div class="relative w-full md:w-[200px]">
-                        <input type="number" placeholder="Enter Tax..." wire:model.live="tax" id="tax"
-                            name="tax"
-                            class="text-sm w-full pl-4 pr-8 py-2 border border-gray-500 rounded-md focus:outline-none text-[#797979]" />
-
-                        <span class="absolute inset-y-0 right-3 flex items-center text-[#797979] pointer-events-none">
-                            %
-                        </span>
+                        <div class="relative text-[#797979]">
+                            <select wire:model.live="tax"
+                                class="w-full px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-sm">
+                                <option value="" disabled>Tax</option>
+                                <option value="12">12%</option>
+                                <option value="13">13%</option>
+                                <option value="14">14%</option>
+                                <option value="15">15%</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
             @endif
