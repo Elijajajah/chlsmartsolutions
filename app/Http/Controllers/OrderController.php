@@ -51,7 +51,7 @@ class OrderController
         }
 
         $tax = is_numeric($request->tax) ? $request->tax : 0;
-        $payment_method = $request->payment_method !== null ? $request->payment_method : 'none';
+        $payment_method = $request->payment_method !== null ? $request->payment_method : 'ewallet';
         $customer_name = trim($request->customer_name ?? '') ?: Auth::user()->fullname;
         $cartItems = session()->get('cartItems', []);
 

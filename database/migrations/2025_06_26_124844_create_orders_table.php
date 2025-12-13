@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('customer_name');
             $table->decimal('total_amount', 10, 2);
             $table->unsignedSmallInteger('tax');
-            $table->enum('payment_method', ['none', 'cheque', 'bank_transfer', 'cash', 'ewallet', 'home_credit'])->default('none');
+            $table->enum('payment_method', ['cheque', 'bank_transfer', 'cash', 'ewallet', 'home_credit'])->default('ewallet');
             $table->enum('type', ['government', 'walk_in', 'project_based', 'online']);
             $table->enum('status', ['pending', 'completed', 'canceled', 'reserved'])->default('pending');
             $table->timestamps();
