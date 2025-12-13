@@ -14,11 +14,29 @@
     <div x-show="open" x-transition.opacity class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div x-show="open" x-transition @click.outside="open = false"
             class="bg-gray-100 rounded-lg shadow-lg w-[320px] md:w-[500px] max-h-[80vh] p-4 overflow-hidden">
-            <div class="flex flex-col px-2">
-                <h2 class="text-xl md:text-2xl font-bold">Order History</h2>
-                <p class="text-gray-500 text-xs">
-                    You have <span class="text-green-600 font-semibold" x-text="cartCount"></span> ordered
-                </p>
+            <div class="flex items-center justify-between">
+                <div class="flex flex-col px-2">
+                    <h2 class="text-xl md:text-2xl font-bold">Order History</h2>
+                    <p class="text-gray-500 text-xs">
+                        You have <span class="text-green-600 font-semibold" x-text="cartCount"></span> ordered
+                    </p>
+                </div>
+                <div class="relative text-[#797979]">
+                    <select wire:model.live="selectedDate"
+                        class="w-[150px] px-4 py-2 border border-gray-500 rounded-md focus:outline-none appearance-none text-sm">
+                        <option value="today">Today</option>
+                        <option value="this_week">This Week</option>
+                        <option value="this_month">This Month</option>
+                        <option selected value="this_year">This Year</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
             </div>
 
             <hr class="my-3 border-gray-300" />
@@ -30,7 +48,35 @@
                     @endphp
 
                     <div class="bg-white rounded-lg shadow mb-6 p-4">
-                        <h3 class="font-semibold text-lg mb-3">Order: {{ $order->reference_id }}</h3>
+                        <div class="flex justify-between items-center">
+
+                            <h3 class="font-semibold text-lg mb-3">Order: {{ $order->reference_id }}</h3>
+                            @if ($order->status == 'reserved')
+                                <div
+                                    class="bg-[#ffeaba] py-2 px-4 w-fit rounded-full text-[#c77a0e] flex gap-1 items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round"
+                                        class="lucide lucide-ellipsis-icon lucide-ellipsis">
+                                        <circle cx="12" cy="12" r="1" />
+                                        <circle cx="19" cy="12" r="1" />
+                                        <circle cx="5" cy="12" r="1" />
+                                    </svg>
+                                    <p class="text-xs capitalize">{{ $order->status }}</p>
+                                </div>
+                            @else
+                                <div
+                                    class="bg-[#c1eacad7] py-2 px-4 w-fit rounded-full text-[#16A34A] flex gap-1 items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round"
+                                        class="lucide lucide-check-icon lucide-check">
+                                        <path d="M20 6 9 17l-5-5" />
+                                    </svg>
+                                    <p class="text-xs capitalize">{{ $order->status }}</p>
+                                </div>
+                            @endif
+                        </div>
 
                         @foreach ($groupedSerials as $index => $serials)
                             @php
