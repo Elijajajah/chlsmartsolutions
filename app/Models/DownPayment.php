@@ -9,6 +9,7 @@ class DownPayment extends Model
     protected $fillable = [
         'order_id',
         'amount',
+        'path',
     ];
 
     public function order()

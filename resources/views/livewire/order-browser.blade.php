@@ -478,6 +478,27 @@
                                     alt="Receipt Image">
                             </details>
                         @endif
+                        @if ($selectedOrder->downPayments && $selectedOrder->downPayments->isNotEmpty())
+                            <details class="collapse collapse-arrow bg-base-100 border border-base-300 text-sm">
+                                <summary class="collapse-title font-semibold">
+                                    Payments
+                                </summary>
+
+                                <div class="flex gap-2 mt-2">
+                                    @foreach ($selectedOrder->downPayments as $index => $downPayment)
+                                        @if ($downPayment->path)
+                                            <div class="flex flex-col items-center">
+                                                <p class="text-sm font-medium">Receipt #{{ $index + 1 }}</p>
+                                                <img class="cursor-pointer w-[225px] rounded-md border"
+                                                    onclick="openReceiptPreview(this.src)"
+                                                    src="{{ asset('storage/' . $downPayment->path) }}"
+                                                    alt="Downpayment Receipt Image">
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </details>
+                        @endif
                         <div class="flex items-center justify-center w-full gap-2 mt-6">
                             <button wire:click="updateStatus({{ $selectedOrder->id }}, 'sold')"
                                 class="cursor-pointer flex gap-2 items-center py-2 px-4 bg-[#16A34A] rounded-md text-white">

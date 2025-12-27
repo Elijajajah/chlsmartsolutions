@@ -33,7 +33,7 @@ class OrderBrowser extends Component
     public function selectOrder($order_id)
     {
         $this->showModal = true;
-        $this->selectedOrder = Order::with('productSerials.product', 'receipt')->find($order_id);
+        $this->selectedOrder = Order::with('productSerials.product', 'receipt', 'downPayments')->find($order_id);
         $this->payment_method = $this->selectedOrder->payment_method;
         $this->type = $this->selectedOrder->type;
         $this->tax = $this->selectedOrder->tax;
@@ -224,6 +224,8 @@ class OrderBrowser extends Component
                     'down_payment_id' => $downPayment->id,
                     'receipt_type' => 'downpayment',
                 ]);
+                $this->reserve_amount = null;
+                $this->showReserveInput = false;
                 $this->dispatch('refresh-page');
                 break;
 
@@ -273,6 +275,8 @@ class OrderBrowser extends Component
                     'down_payment_id' => $downPayment->id,
                     'receipt_type' => 'downpayment',
                 ]);
+                $this->reserve_amount = null;
+                $this->showReserveInput = false;
                 $this->dispatch('refresh-page');
                 break;
 
