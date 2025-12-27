@@ -48,14 +48,20 @@
             </svg>
         </div>
     </div>
+
+    <fieldset class="fieldset text-[#4f4f4f]">
+        <legend class="text-xs md:text-sm font-medium">Upload a Proof</legend>
+        <input type="file" class="file-input w-full" wire:model.live='proof' />
+    </fieldset>
+
     <div class="flex-1 flex flex-col text-[#4f4f4f] gap-1">
         <p class="text-xs md:text-sm font-medium">Notes/Remarks (Optional)</p>
-        <textarea wire:input="$set('remarks', $event.target.value)" name="description" id="description" rows="5"
+        <textarea wire:input="$set('remarks', $event.target.value)" name="description" id="description" rows="3"
             class="text-sm md:text-base border border-gray-500 focus:outline-none text-[#797979] w-full resize-none py-2 px-4 rounded-md"
             placeholder="Enter Notes/Remarks here..."></textarea>
     </div>
 
-    <div class="flex flex-col md:flex-row items-center gap-2 md:gap-4 md:mt-6">
+    <div class="flex flex-col md:flex-row items-center gap-2 md:gap-4 md:mt-4">
         <button type="button" wire:click='cancel'
             class="w-full flex-1 py-2 border border-[#4f4f4f] rounded-md text-xs md:text-sm cursor-pointer">
             Cancel

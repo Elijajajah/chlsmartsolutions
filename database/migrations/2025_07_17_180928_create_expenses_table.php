@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('amount', 12, 2)->default(0);
             $table->date('expense_date');
             $table->text('remarks');
+            $table->string('path');
             $table->timestamps();
         });
     }

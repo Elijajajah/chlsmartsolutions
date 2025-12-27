@@ -14,5 +14,6 @@ class Expense extends Model
         'amount',
         'expense_date',
         'remarks',
+        'path',
     ];
 }

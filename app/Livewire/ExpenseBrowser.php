@@ -17,6 +17,8 @@ class ExpenseBrowser extends Component
     protected $listeners = ['cancel' => 'closeModal'];
     public $selectedDate = 'this_year';
     public $startDate;
+    public $showImage = false;
+    public $imagePath = null;
 
     public function mount()
     {
@@ -38,6 +40,20 @@ class ExpenseBrowser extends Component
         if ($property === 'selectedStatus' || $property === 'search') {
             $this->gotoPage(1);
         }
+    }
+
+    public function showExpense($expenseId)
+    {
+        $expense = Expense::findOrFail($expenseId);
+
+        $this->imagePath = $expense->path;
+        $this->showImage = true;
+    }
+
+    public function closeImage()
+    {
+        $this->showImage = false;
+        $this->imagePath = null;
     }
 
     public function updatedSelectedDate($value)

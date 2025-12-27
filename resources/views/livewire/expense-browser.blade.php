@@ -1,12 +1,12 @@
 <div class="flex flex-col gap-4 md:gap-6 relative pb-4 md:pb-0">
     <button wire:click='openModal'
-        class="fixed bottom-6 right-6 z-20 bg-[#203D3F] hover:bg-[#182f31] text-white rounded-full shadow-lg p-3 flex items-center justify-center transition-colors duration-200"
-                style="box-shadow: 0 4px 16px rgba(32,61,63,0.15);">
+        class="sm:block md:hidden fixed bottom-6 right-6 z-20 bg-[#203D3F] hover:bg-[#182f31] text-white rounded-full shadow-lg p-3 flex items-center justify-center transition-colors duration-200"
+        style="box-shadow: 0 4px 16px rgba(32,61,63,0.15);">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 12h14" />
             <path d="M12 5v14" />
-        </svg>  
+        </svg>
     </button>
     <div class="w-full flex items-center justify-end gap-4">
         <div class="hidden w-full md:flex items-center justify-end">
@@ -291,13 +291,34 @@
                     <p class="text-[#999999] text-sm">
                         {{ \Carbon\Carbon::parse($expense->expense_date)->format('F d, Y') }}</p>
                 </div>
-                <p class="font-semibold">₱{{ number_format($expense->amount, 2) }}</p>
+                <div class="flex gap-4 items-center">
+                    <p class="font-semibold">₱{{ number_format($expense->amount, 2) }}</p>
+                    <button wire:click="showExpense({{ $expense->id }})" class="text-[#3B82F6] cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="lucide lucide-eye-icon lucide-eye">
+                            <path
+                                d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         @empty
             <div class="w-full py-8 flex items-center justify-center text-sm text-[#9A9A9A]">
                 No Expenses found.
             </div>
         @endforelse
+
+        @if ($showImage)
+            <div wire:click="closeImage"
+                class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center cursor-pointer">
+                <div wire:click.stop class="max-w-3xl max-h-[90vh] bg-white rounded-lg shadow-lg">
+                    <img src="{{ asset('storage/' . $imagePath) }}" alt="Expense Proof"
+                        class="max-h-[80vh] w-auto mx-auto rounded" />
+                </div>
+            </div>
+        @endif
 
         <div class="w-full flex flex-col md:flex-row gap-2 items-center justify-between h-fit p-4">
             <p class="">Showing {{ $expenses->firstItem() ?? 0 }} to {{ $expenses->lastItem() }} of
@@ -344,7 +365,7 @@
     @if ($showModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
             <div
-                class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg gap-3 md:gap-6 w-full p-6 md:p-8 relative font-poppins flex flex-col justify-center">
+                class="bg-white rounded-xl shadow-lg max-w-[300px] md:max-w-lg gap-2 w-full p-4 md:p-6 relative font-poppins flex flex-col justify-center">
                 <h1 class="text-[#203D3F] md:text-lg font-semibold">Add New Expense</h1>
                 <livewire:expense-form />
             </div>
