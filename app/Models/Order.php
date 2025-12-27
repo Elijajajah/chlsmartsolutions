@@ -18,6 +18,7 @@ class Order extends Model
         'type',
         'tax',
         'status',
+        'path',
     ];
 
     public function user()

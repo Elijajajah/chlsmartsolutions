@@ -10,10 +10,11 @@ use App\Mail\OrderCanceledMail;
 use App\Mail\OrderReservedMail;
 use App\Mail\OrderCompletedMail;
 use Livewire\WithoutUrlPagination;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Services\NotificationService;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Storage;
 
 class OrderBrowser extends Component
 {
@@ -109,6 +110,26 @@ class OrderBrowser extends Component
         $this->updateStatus($orderId, 'reserved');
     }
 
+
+    public function downloadOrder(int $orderId): StreamedResponse
+    {
+        $order = Order::findOrFail($orderId);
+
+        if (! $order->path) {
+            notyf()->error('Receipt not found for this order.');
+            abort(404);
+        }
+
+        if (! Storage::disk('public')->exists($order->path)) {
+            notyf()->error('Receipt file is missing.');
+            abort(404);
+        }
+
+        return Storage::disk('public')->download(
+            $order->path,
+            'receipt_' . $order->reference_id . '.png'
+        );
+    }
 
     public function updateStatus($id, $status)
     {

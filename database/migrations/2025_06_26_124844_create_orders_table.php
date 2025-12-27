@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('reference_id')->nullable()->unique();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('path')->nullable();
             $table->string('customer_name');
             $table->decimal('total_amount', 10, 2);
             $table->unsignedSmallInteger('tax');

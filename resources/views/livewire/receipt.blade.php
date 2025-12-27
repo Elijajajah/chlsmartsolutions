@@ -5,9 +5,24 @@
 
 <div>
     @if ($order)
-        <div x-data="{ show: {{ session('showCard') ? 'true' : 'false' }} }" x-show="show" x-transition x-cloak
-            class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/50 backdrop-blur-xs">
-            <div id="capture-area" class="bg-white flex flex-col rounded-xl font-inter p-8 gap-4 w-[320px] md:w-[450px]">
+        <div x-data="{
+            show: {{ session('showCard') ? 'true' : 'false' }},
+            saving: false
+        }" x-init="if (show && !{{ session('receipt_saved') ? 'true' : 'false' }}) {
+            saving = true;
+            $nextTick(() => autoSaveReceipt());
+        }" x-on:receipt-saved.window="saving = false" x-show="show"
+            x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
+            <div x-show="saving" class="absolute inset-0 flex items-center justify-center bg-white/80 z-50 rounded-xl">
+                <svg class="animate-spin h-10 w-10 text-green-600" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                        stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8z" />
+                </svg>
+                <p class="ml-3 text-sm font-medium">Saving receipt…</p>
+            </div>
+            <div id="capture-area"
+                class="bg-white flex flex-col rounded-xl font-inter p-8 gap-4 w-[320px] md:w-[450px]">
                 <div class="flex flex-col items-center justify-center gap-1">
                     <div class="flex items-center gap-2">
                         <img class="w-6 md:w-8" src="{{ asset('images/chlss_logo.png') }}" alt="chlss_logo.png"
@@ -85,7 +100,7 @@
                 </div>
                 <div id="exclude"
                     class="w-full flex items-center justify-center text-white mt-4 gap-8 text-xs md:text-sm bg-white p-2 rounded-lg">
-                    <button onclick="downloadAsImage()" class="bg-[#5AA526] py-2 px-4 rounded-md cursor-pointer">
+                    <button wire:click="downloadReceipt" class="bg-[#5AA526] py-2 px-4 rounded-md cursor-pointer">
                         Download
                     </button>
                     <button wire:click="clearSession" @click="show = false"
@@ -96,43 +111,60 @@
         </div>
     @endif
 </div>
-
 <script>
-    function downloadAsImage() {
-        const node = document.getElementById('capture-area');
-        const scrollable = document.getElementById('receipt-scroll');
+    async function autoSaveReceipt() {
+        const original = document.getElementById('capture-area');
         const cloneContainer = document.getElementById('clone-container');
 
-        // Clone node
-        const clone = node.cloneNode(true);
-        const cloneScrollable = clone.querySelector('#receipt-scroll');
+        const clone = original.cloneNode(true);
+        clone.classList.add('dom-capture');
 
-        // Show full scroll content
-        cloneScrollable.style.maxHeight = 'none';
-        cloneScrollable.style.overflow = 'visible';
-
-        // Hide buttons
         const exclude = clone.querySelector('#exclude');
-        if (exclude) {
-            exclude.remove(); // Remove from DOM to avoid rendering
+        if (exclude) exclude.remove();
+
+        const scroll = clone.querySelector('#receipt-scroll');
+        if (scroll) {
+            scroll.style.maxHeight = 'none';
+            scroll.style.overflow = 'visible';
         }
 
-        // Put clone in hidden container
         cloneContainer.innerHTML = '';
         cloneContainer.appendChild(clone);
 
-        // Ensure DOM is updated
-        setTimeout(() => {
-            domtoimage.toPng(clone)
-                .then((dataUrl) => {
-                    const link = document.createElement('a');
-                    link.download = `receipt_{{ session('referenceId') }}.png`;
-                    link.href = dataUrl;
-                    link.click();
-                })
-                .catch((error) => {
-                    console.error('Error capturing image:', error);
+        await document.fonts.ready;
+        await waitForImages(clone);
+
+        try {
+            const dataUrl = await domtoimage.toPng(clone, {
+                bgcolor: '#ffffff',
+                width: clone.offsetWidth,
+                height: clone.scrollHeight,
+                cacheBust: true
+            });
+
+            // 🔥 Send to Livewire
+            Livewire.dispatch('save-receipt', {
+                image: dataUrl
+            });
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function waitForImages(container) {
+        const images = container.querySelectorAll('img');
+
+        return Promise.all(
+            [...images].map(img => {
+                if (img.complete && img.naturalWidth !== 0) {
+                    return Promise.resolve();
+                }
+
+                return new Promise(resolve => {
+                    img.onload = img.onerror = resolve;
                 });
-        }, 100); // Reduced delay should work if you're just hiding
+            })
+        );
     }
 </script>

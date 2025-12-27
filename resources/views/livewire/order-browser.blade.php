@@ -208,7 +208,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                <div class="w-[15%] pr-4 py-3 flex items-center justify-center gap-2 text-xs">
+                                <div class="w-[15%] pr-4 py-3 flex items-center justify-center gap-3 text-xs">
                                     <button
                                         @if (auth()->user()->role !== 'owner') wire:click="selectOrder({{ $order->id }})" @endif
                                         class="{{ auth()->user()->role === 'owner' ? 'cursor-not-allowed text-gray-400' : 'cursor-pointer text-[#3B82F6]' }}"
@@ -220,6 +220,17 @@
                                             <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                                             <path
                                                 d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
+                                        </svg>
+                                    </button>
+                                    <button wire:click="downloadOrder({{ $order->id }})"
+                                        class="cursor-pointer text-red-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                            class="lucide lucide-download-icon lucide-download">
+                                            <path d="M12 15V3" />
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                            <path d="m7 10 5 5 5-5" />
                                         </svg>
                                     </button>
                                 </div>
