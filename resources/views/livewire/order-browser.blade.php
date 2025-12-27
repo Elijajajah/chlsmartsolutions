@@ -273,6 +273,7 @@
                     </div>
                 </nav>
             </div>
+
             @if ($showModal && $selectedOrder)
                 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
                     <div
@@ -439,8 +440,20 @@
                                 </div>
                             @endif
                             <div class="w-full flex items-center justify-between">
-                                <p class="font-bold">Total:</p>
+                                <p class="text-sm">Total:</p>
                                 <p class="w-[35%] text-center">₱{{ number_format($total_amount, 2) }}
+                                </p>
+                            </div>
+                            <div class="w-full flex items-center justify-between -mt-2">
+                                <p class="text-sm">Payment:</p>
+                                <p class="w-[35%] text-center">
+                                    ₱{{ number_format($selectedOrder->totalDownPayment(), 2) }}
+                                </p>
+                            </div>
+                            <div class="w-full flex items-center justify-between">
+                                <p class="font-bold">Balance:</p>
+                                <p class="w-[35%] text-center">
+                                    ₱{{ number_format($selectedOrder->remainingBalance(), 2) }}
                                 </p>
                             </div>
                         </div>
@@ -466,9 +479,9 @@
                                 </svg>
                                 <p>Complete</p>
                             </button>
-                            <button wire:click="updateStatus({{ $selectedOrder->id }}, 'reserved')"
+                            <button wire:click="prepareReserve"
                                 class="cursor-pointer flex gap-2 items-center py-2 px-4 bg-blue-600 rounded-md text-white">
-                                <p>Reserve</p>
+                                Reserve
                             </button>
                             <button wire:click="updateStatus({{ $selectedOrder->id }}, 'cancel')"
                                 class="cursor-pointer flex gap-2 items-center py-2 px-4 bg-red-500 rounded-md text-white">
@@ -476,6 +489,44 @@
                             </button>
                         </div>
                     </div>
+                    @if ($showReserveInput)
+                        <div
+                            class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                            <div class="bg-white rounded-xl shadow-xl w-[90%] max-w-sm p-6 relative">
+
+                                {{-- Close --}}
+                                <button wire:click="$set('showReserveInput', false)"
+                                    class="absolute top-3 right-3 text-gray-500 hover:text-red-500">
+                                    ✕
+                                </button>
+
+                                <h2 class="text-lg font-semibold mb-4">Enter Reserve Amount</h2>
+
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-sm font-medium">Reserve Amount</label>
+                                    <input type="number" min="1" wire:model.defer="reserve_amount"
+                                        class="w-full px-4 py-2 border border-gray-400 rounded-md focus:outline-none"
+                                        placeholder="Enter down payment amount" />
+
+                                    @error('reserve_amount')
+                                        <span class="text-xs text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div class="flex justify-end gap-2 mt-6">
+                                    <button wire:click="$set('showReserveInput', false)"
+                                        class="cursor-pointer px-4 py-2 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100">
+                                        Cancel
+                                    </button>
+
+                                    <button wire:click="confirmReserve({{ $selectedOrder->id }})"
+                                        class="cursor-pointer px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700">
+                                        Confirm Reserve
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             @endif
         @endif

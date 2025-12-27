@@ -35,4 +35,18 @@ class Order extends Model
     {
         return $this->hasOne(Receipt::class);
     }
+
+    public function downPayments()
+    {
+        return $this->hasMany(DownPayment::class);
+    }
+    public function totalDownPayment(): float
+    {
+        return (float) $this->downPayments()->sum('amount');
+    }
+
+    public function remainingBalance(): float
+    {
+        return max(0, $this->total_amount - $this->totalDownPayment());
+    }
 }

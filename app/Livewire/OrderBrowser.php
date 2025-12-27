@@ -26,6 +26,8 @@ class OrderBrowser extends Component
     public $payment_method = 'none', $type = '', $tax = '', $total_amount = '', $price = '';
     public string $activeTab = 'orderBrowse';
     public bool $typeInitialized = false;
+    public bool $showReserveInput = false;
+    public $reserve_amount = null;
 
     public function selectOrder($order_id)
     {
@@ -83,6 +85,31 @@ class OrderBrowser extends Component
         return $orderService->countOrder($status);
     }
 
+    public function prepareReserve()
+    {
+        $this->showReserveInput = true;
+    }
+
+    public function confirmReserve($orderId)
+    {
+        $order = Order::findOrFail($orderId);
+
+        if ($order->status === 'reserved') {
+            notyf()->error('This order is already reserved.');
+            return;
+        }
+
+        $this->validate([
+            'reserve_amount' => 'required|numeric|min:1',
+        ], [
+            'reserve_amount.required' => 'Please enter a reserve amount.',
+            'reserve_amount.min' => 'Reserve amount must be greater than zero.',
+        ]);
+
+        $this->updateStatus($orderId, 'reserved');
+    }
+
+
     public function updateStatus($id, $status)
     {
         if (in_array($status, ['sold', 'reserved'])) {
@@ -138,6 +165,14 @@ class OrderBrowser extends Component
 
         switch ($status) {
             case 'sold':
+                $remaining = $order->remainingBalance();
+
+                if ($remaining > 0) {
+                    $order->downPayments()->create([
+                        'amount' => $remaining,
+                    ]);
+                }
+
                 $order->productSerials()->update(['status' => 'sold']);
                 $order->update([
                     'status' => 'completed',
@@ -161,6 +196,21 @@ class OrderBrowser extends Component
                 break;
 
             case 'reserved':
+
+                if (!$this->reserve_amount || $this->reserve_amount <= 0) {
+                    notyf()->error('Reserve amount is required.');
+                    return;
+                }
+
+                if ($this->reserve_amount > $order->remainingBalance()) {
+                    notyf()->error('Reserve amount exceeds remaining balance.');
+                    return;
+                }
+
+                $order->downPayments()->create([
+                    'amount' => $this->reserve_amount,
+                ]);
+
                 $order->productSerials()->update(['status' => 'reserved']);
                 $order->update([
                     'status' => 'reserved',
