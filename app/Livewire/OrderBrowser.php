@@ -189,7 +189,7 @@ class OrderBrowser extends Component
                 $remaining = $order->remainingBalance();
 
                 if ($remaining > 0) {
-                    $order->downPayments()->create([
+                    $downPayment = $order->downPayments()->create([
                         'amount' => $remaining,
                     ]);
                 }
@@ -214,6 +214,17 @@ class OrderBrowser extends Component
                 );
 
                 notyf()->success('Order has been completed.');
+
+                session([
+                    'showCard' => true,
+                    'orderId' => $order->id,
+                    'total' => $order->total_amount,
+                    'tax' => $order->tax,
+                    'referenceId' => $order->reference_id,
+                    'down_payment_id' => $downPayment->id,
+                    'receipt_type' => 'downpayment',
+                ]);
+                $this->dispatch('refresh-page');
                 break;
 
             case 'reserved':
@@ -228,7 +239,7 @@ class OrderBrowser extends Component
                     return;
                 }
 
-                $order->downPayments()->create([
+                $downPayment = $order->downPayments()->create([
                     'amount' => $this->reserve_amount,
                 ]);
 
@@ -252,6 +263,17 @@ class OrderBrowser extends Component
                 );
 
                 notyf()->success('Products have been reserved, order remains pending.');
+
+                session([
+                    'showCard' => true,
+                    'orderId' => $order->id,
+                    'total' => $order->total_amount,
+                    'tax' => $order->tax,
+                    'referenceId' => $order->reference_id,
+                    'down_payment_id' => $downPayment->id,
+                    'receipt_type' => 'downpayment',
+                ]);
+                $this->dispatch('refresh-page');
                 break;
 
             case 'cancel':

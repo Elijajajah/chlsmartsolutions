@@ -2,11 +2,12 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Order;
-use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use App\Models\DownPayment;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Receipt extends Component
@@ -15,6 +16,10 @@ class Receipt extends Component
     public function saveReceipt($image)
     {
         if (session('receipt_saved')) return;
+
+        if (! session()->has('receipt_type')) {
+            session(['receipt_type' => 'order']);
+        }
 
         $orderId = session('orderId');
         $order = Order::findOrFail($orderId);
@@ -26,9 +31,23 @@ class Receipt extends Component
 
         Storage::disk('public')->put($path, $image);
 
-        $order->update([
-            'path' => $path
-        ]);
+        $type = session('receipt_type', 'order');
+
+        if (session('receipt_type') === 'downpayment' && session()->has('down_payment_id')) {
+
+            $downPayment = DownPayment::findOrFail(
+                session('down_payment_id')
+            );
+
+            $downPayment->update([
+                'path' => $path,
+            ]);
+        } else {
+            // ✅ Default always goes here
+            $order->update([
+                'path' => $path,
+            ]);
+        }
 
         session([
             'receipt_saved' => true
@@ -58,9 +77,10 @@ class Receipt extends Component
         session()->forget([
             'showCard',
             'orderId',
-            'total',
             'referenceId',
-            'receipt_saved'
+            'receipt_saved',
+            'receipt_type',
+            'down_payment_id',
         ]);
     }
 

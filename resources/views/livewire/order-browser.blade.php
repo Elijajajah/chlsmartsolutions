@@ -463,7 +463,7 @@
                             </div>
                             <div class="w-full flex items-center justify-between">
                                 <p class="font-bold">Balance:</p>
-                                <p class="w-[35%] text-center">
+                                <p class="w-[35%] text-center font-medium">
                                     ₱{{ number_format($selectedOrder->remainingBalance(), 2) }}
                                 </p>
                             </div>
@@ -574,6 +574,10 @@
 </div>
 
 <script>
+    window.addEventListener('refresh-page', () => {
+        location.reload();
+    });
+
     function openReceiptPreview(src) {
         document.getElementById('receiptImage').src = src;
         document.getElementById('receiptPreview').classList.remove('hidden');
