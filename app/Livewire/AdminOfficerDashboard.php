@@ -28,31 +28,36 @@ class AdminOfficerDashboard extends Component
             default => null,
         };
     }
-    public function getTotalProductProperty()
-    {
-        return Product::count();
-    }
 
-    public function getTaskTodayProperty()
+    public function getTaskProperty()
     {
-        return Task::whereDate('created_at', '<=', now())
-            ->where('status', 'pending')
+        return Task::where('status', 'pending')
+            ->whereBetween('updated_at', [$this->startDate, now()])
             ->count();
     }
 
-    public function getOrderTodayProperty()
+    public function getOrderProperty()
     {
-        return Order::whereDate('created_at', '<=', now())
-            ->where('status', 'pending')
+        return Order::where('status', 'pending')
+            ->whereBetween('updated_at', [$this->startDate, now()])
             ->count();
     }
 
     public function getTotalSalesProperty()
     {
-        return Order::where('status', 'completed')
-            ->whereBetween('updated_at', [$this->startDate, now()])
+        // Orders total
+        $ordersTotal = Order::whereBetween('updated_at', [$this->startDate, now()])
+            ->where('status', 'completed')
             ->sum('total_amount');
+
+        // Tasks total
+        $tasksTotal = Task::whereBetween('updated_at', [$this->startDate, now()])
+            ->where('status', 'completed')
+            ->sum('price');
+
+        return $ordersTotal + $tasksTotal;
     }
+
 
     public function getTotalExpensesProperty()
     {

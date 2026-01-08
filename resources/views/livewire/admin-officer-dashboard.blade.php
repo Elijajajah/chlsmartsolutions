@@ -90,7 +90,7 @@
                     </div>
                     <p class="font-medium text-xs mt-3">Order Today</p>
                     <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">Available orders</p>
-                    <h1 class="text-[#FEB558] font-semibold mt-6">{{ $this->orderToday }}</h1>
+                    <h1 class="text-[#FEB558] font-semibold mt-6">{{ $this->order }}</h1>
                 </div>
                 <div class="hidden md:w-1/5 md:flex flex-col items-center justify-center bg-white p-4 rounded-lg">
                     <div class="rounded-full bg-[#29AB91] text-white flex justify-center items-center size-13">
@@ -107,7 +107,7 @@
                     </div>
                     <p class="font-medium text-xs mt-3">Task Today</p>
                     <p class="text-[#BDBEC3] font-lighter text-[0.6rem]">Pending tasks</p>
-                    <h1 class="text-[#29AB91] font-semibold mt-6">{{ $this->taskToday }}</h1>
+                    <h1 class="text-[#29AB91] font-semibold mt-6">{{ $this->task }}</h1>
                 </div>
             </div>
             <div class="h-[275px] md:h-[375px]">

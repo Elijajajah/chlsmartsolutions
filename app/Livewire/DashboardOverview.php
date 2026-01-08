@@ -25,14 +25,22 @@ class DashboardOverview extends Component
 
     public function getTotalSalesProperty()
     {
-        return Order::where('status', 'completed')
-            ->whereBetween('updated_at', [$this->startDate, now()])
+        // Orders total
+        $ordersTotal = Order::whereBetween('updated_at', [$this->startDate, now()])
+            ->where('status', 'completed')
             ->sum('total_amount');
+
+        // Tasks total
+        $tasksTotal = Task::whereBetween('updated_at', [$this->startDate, now()])
+            ->where('status', 'completed')
+            ->sum('price');
+
+        return $ordersTotal + $tasksTotal;
     }
 
     public function getOrderProperty()
     {
-        return Order::where('status', 'completed')
+        return Order::where('status', 'pending')
             ->whereBetween('updated_at', [$this->startDate, now()])
             ->count();
     }
